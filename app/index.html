@@ -329,7 +329,7 @@ const SCENARIOS = {
     steps:360, stepMs:420,
     labels:[{x:72,y:525,t:'West coves'},{x:880,y:122,t:'North-east bay'},{x:800,y:565,t:'South inlets'}],
     ph:{lo:6.5,hi:8.0,span:1.2},
-    cards:['temp','turb','tds','depth','do','ph','chl'],
+    cards:['temp','turb','tds','depth','do','ph','chl','oil'],
     today:{seed:7, s:1.0, tBase:21},
     history:[
       {date:'2026-05-14', seed:11, s:0.15, tBase:16.5},
@@ -367,6 +367,8 @@ const SCENARIOS = {
         ph: 7.7 + 1.3*B - 0.6*H + gauss(r)*0.04,
         turb: Math.round(350 + 1300*B + 1000*T1 + 500*nearBottom + 250*H + gauss(r)*25),
         tds: Math.round(175 + 25*B + 35*H + 20*T1 + gauss(r)*3),
+        // Oil and fuel in water (ppb): low everywhere, a surface trace off the south shore (simulated).
+        oil: Math.max(0.2, 1.5 + 34*p.s*g2(x,y,605,440,55)*Math.exp(-(Math.max(0,d-2)**2)/4) + gauss(r)*0.4),
         sal: null, bottom
       };
     }
@@ -380,7 +382,7 @@ const SCENARIOS = {
     waypoints:[[250,110],[262,172],[380,214],[520,222],[640,262],[760,300],[872,360],[862,462],[740,502],[612,452],[520,372],[420,302],[302,240],[232,172],[250,112]],
     labels:[{x:256,y:40,t:'Harbor'},{x:725,y:466,t:'Shellfish farm'}],
     ph:{lo:7.8,hi:8.4,span:0.5},
-    cards:['temp','turb','sal','depth','do','ph','chl'],
+    cards:['temp','turb','sal','depth','do','ph','chl','oil'],
     steps:200, stepMs:300,
     today:{seed:21, s:1.0, tBase:18},
     history:[
@@ -404,7 +406,8 @@ const SCENARIOS = {
         ph: 8.1 + 0.4*a - 0.15*H + gauss(r)*0.02,
         turb: Math.round(350 + 500*a + 1150*H + gauss(r)*25),
         tds: null,
-        sal: 36 - 4.5*H + gauss(r)*0.1
+        sal: 36 - 4.5*H + gauss(r)*0.1,
+        oil: Math.max(0.2, 1.2 + 40*H*Math.exp(-(Math.max(0,d-1.5)**2)/3) + gauss(r)*0.4)
       };
     }
   }
@@ -418,7 +421,8 @@ const CARDS = {
   depth:{nm:'Depth', u:'m', hw:'pressure sensor', status:'planned', fmt:v=>v.toFixed(1), key:'depth'},
   do:   {nm:'Dissolved O₂', u:'mg/L', hw:'DO probe', status:'planned', fmt:v=>v.toFixed(1), key:'do'},
   ph:   {nm:'pH', u:'', hw:'pH probe', status:'planned', fmt:v=>v.toFixed(2), key:'ph'},
-  chl:  {nm:'Chlorophyll-a (bloom signal)', u:'µg/L', hw:'fluorometer', status:'planned', fmt:v=>v.toFixed(1), key:'chl', wide:true}
+  chl:  {nm:'Chlorophyll-a (bloom signal)', u:'µg/L', hw:'fluorometer', status:'planned', fmt:v=>v.toFixed(1), key:'chl', wide:true},
+  oil:  {nm:'Pollution: oil and fuel in water', u:'ppb', hw:'UV fluorometer', status:'planned', fmt:v=>v.toFixed(1), key:'oil', wide:true}
 };
 const LIVE_KEYS = ['temp','turb','tds'];
 
@@ -480,7 +484,10 @@ function scorePoint(p, sc){
   if(p.do<2) shown='high'; else if(p.do<3 && shown==='low') shown='watch';
   if((p.unusual||p.murky) && shown==='low') shown='watch';
   p.shown = shown;
-  p.reason = p.lowO2 ? 'oxygen' : bloomScore(p.chl)>=0.4 ? 'bloom' : p.murky ? 'murky' : p.unusual ? 'unusual' : 'index';
+  // Fuel trace (oil-in-water probe, planned): screening only, the lab confirms the substance.
+  p.fuel = p.oil!=null && p.oil>=15;
+  if(p.fuel && p.shown==='low') p.shown='watch';
+  p.reason = p.lowO2 ? 'oxygen' : bloomScore(p.chl)>=0.4 ? 'bloom' : p.fuel ? 'fuel' : p.murky ? 'murky' : p.unusual ? 'unusual' : 'index';
   return p;
 }
 /* Who reads the result. Suggestions only: the lab confirms and the manager decides. */
@@ -498,10 +505,11 @@ const PROFILES = {
            watch:'Suggested: sample near the intake and keep an eye on turbidity.',
            deep:'Suggested: avoid drawing water from this depth until the lab result is back.' }
 };
-const UNUSUAL_HINT = 'We cannot measure metals or fuel residues live. The lab can.';
+const UNUSUAL_HINT = 'The fuel probe only screens, and metals cannot be measured live. The lab can.';
 function reasonText(p){
   if(p.reason==='oxygen') return (p.do<2?'very low oxygen':'oxygen dropping')+' ('+p.do.toFixed(1)+' mg/L)';
   if(p.reason==='bloom') return 'bloom signal (chlorophyll-a '+p.chl.toFixed(0)+' µg/L)';
+  if(p.reason==='fuel') return 'fuel trace (oil in water '+p.oil.toFixed(0)+' ppb)';
   if(p.reason==='murky') return 'murky water (turbidity raw '+Math.round(p.turb)+')';
   if(p.reason==='unusual') return 'unusual water';
   return 'index '+p.index;
@@ -513,6 +521,7 @@ function verdictFor(p, sc){
       ? ['High: very low oxygen at '+at+'. Sample now. Lab confirms.', 'Below the thermocline (about 5 m), '+p.do.toFixed(1)+' mg/L. Fish at risk. '+pr.deep]
       : ['Watch: oxygen dropping at '+at+'. Sample here.', p.do.toFixed(1)+' mg/L below the thermocline. '+pr.deep];
     if(p.shown==='high') return ['High: do not swim. Sample now. Lab confirms.', 'Bloom signal at '+at+'. '+pr.high];
+    if(p.reason==='fuel') return ['Watch: fuel trace at '+at+'. Sample for lab (hydrocarbons).', 'Oil in water '+p.oil.toFixed(0)+' ppb, likely from boats. The lab confirms the substance.'];
     if(p.reason==='murky') return ['Watch: murky water at '+at+'. Sample for lab (sediment, nutrients, bacteria).', 'Likely inflow or stirred-up sediment. The lab can tell.'];
     if(p.shown==='watch') return ['Watch: sample here.', 'At '+at+'. '+pr.watch];
     return ['Looks OK. Keep scanning.','No warning signs at '+at+'.'];
@@ -527,6 +536,7 @@ function verdictFor(p, sc){
 function actionFor(p){
   const pr = PROFILES[S.profile] || PROFILES.lake;
   if(p.reason==='oxygen') return 'Sample deep water for lab (oxygen, ammonia, iron and manganese). '+pr.deep.replace('Suggested: ','');
+  if(p.reason==='fuel') return 'Sample for lab (hydrocarbons, oil and fuel)';
   if(p.reason==='murky') return 'Sample for lab (sediment, nutrients, bacteria)';
   if(p.unusual && p.level==='low') return 'Sample for lab (metals, hydrocarbons)';
   return 'Sample for lab (algal toxins, bacteria). '+(p.shown==='high'?pr.high:pr.watch).replace('Suggested: ','');
@@ -631,7 +641,7 @@ function flagHere(){
   if(!f){ f={i, auto:false, sampled:false}; S.flags.push(f); logEvent('Flag set by operator at point '+(i+1)+'.', 'watch'); }
   if(!f.sampled){
     f.sampled=true;
-    const what = p.reason==='oxygen' ? 'oxygen, ammonia, iron and manganese' : p.reason==='murky' ? 'sediment, nutrients, bacteria' : p.unusual ? 'metals, hydrocarbons' : 'algal toxins, bacteria';
+    const what = p.reason==='oxygen' ? 'oxygen, ammonia, iron and manganese' : p.reason==='fuel' ? 'hydrocarbons' : p.reason==='murky' ? 'sediment, nutrients, bacteria' : p.unusual ? 'metals, hydrocarbons' : 'algal toxins, bacteria';
     logEvent('Sample taken at point '+(i+1)+', '+p.depth.toFixed(1)+' m. Sent to lab for '+what+'. Lab result pending.', 'sample');
   }
   renderLive();
@@ -836,12 +846,12 @@ function renderAll(){
 }
 
 /* ---------- history ---------- */
-const STORE_KEY='hydrov.scans.v2';
+const STORE_KEY='hydrov.scans.v3';
 function loadSaved(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{}; }catch(e){ return {}; } }
 function writeSaved(o){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(o)); }catch(e){} }
 function saveScan(){
   const all=loadSaved(); const list=all[S.sc]||[];
-  const pts=S.points.map(p=>({i:p.i,x:+p.x.toFixed(1),y:+p.y.toFixed(1),depth:+p.depth.toFixed(2),bottom:p.bottom==null?null:+p.bottom.toFixed(2),chl:+p.chl.toFixed(2),temp:+p.temp.toFixed(2),do:+p.do.toFixed(2),ph:+p.ph.toFixed(3),turb:p.turb,tds:p.tds,sal:p.sal==null?null:+p.sal.toFixed(2),live:p.live}));
+  const pts=S.points.map(p=>({i:p.i,x:+p.x.toFixed(1),y:+p.y.toFixed(1),depth:+p.depth.toFixed(2),bottom:p.bottom==null?null:+p.bottom.toFixed(2),chl:+p.chl.toFixed(2),temp:+p.temp.toFixed(2),do:+p.do.toFixed(2),ph:+p.ph.toFixed(3),turb:p.turb,tds:p.tds,sal:p.sal==null?null:+p.sal.toFixed(2),oil:p.oil==null?null:+p.oil.toFixed(2),live:p.live}));
   list.push({date:new Date().toISOString().slice(0,10), lap:S.lap, saved:true, points:pts, flags:S.flags.map(f=>({i:f.i,auto:f.auto,sampled:f.sampled})), live:S.points.some(p=>p.live.length)});
   all[S.sc]=list.slice(-8); writeSaved(all);
 }
