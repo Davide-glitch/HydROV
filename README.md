@@ -35,6 +35,7 @@ It starts a small server on `http://127.0.0.1:8000/app/` (localhost only, the ne
 Without Python, double-click `app/index.html`. Everything works except Connect Arduino. Keep the `app` folder next to `config.js`.
 
 - Press **Start dive** (or the space bar). The lake dive takes about 20 seconds at 1x.
+- The lake scenario is drawn on the real shoreline of **Lake Surduc** (Timiș county) from OpenStreetMap, with real coordinates and a timestamp for every point. The readings on that map are SIMULATED. We have not measured this lake, and the demo says nothing about its real water quality.
 - Switch between **Lake** and **Sea & coast (concept)** at the top. The sea scenario is a concept. The prototype is freshwater.
 - **Advice for** picks who reads the result: a lake or bathing-water manager, a fish or shellfish farm, or a drinking-water operator. The suggested action changes to fit. The lab confirms and the manager decides.
 - **Flag and sample here** marks a sample point. A High reading that nobody acknowledges within 20 seconds triggers a simulated SMS to the manager.
@@ -87,6 +88,7 @@ Prices will be set after talks with pilot customers.
 - EU food safety rules on marine biotoxins in shellfish.
 - Romanian Order 161/2006 (MMGA) on the classification of surface water quality, and the official reports of the National Administration "Romanian Waters" (ANAR).
 - Limnology literature and aquaculture guidelines.
+- Lake Surduc shoreline: © OpenStreetMap contributors, available under the Open Database License (ODbL).
 
 These standards are what lab results are read against. The demo app does not measure any of these substances.
 

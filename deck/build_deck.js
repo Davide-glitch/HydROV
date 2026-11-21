@@ -173,7 +173,7 @@ slides.push({
     eyebrow("WORKING PROTOTYPE"),
     headline([["It runs. ", {}], ["Live.", { c: K.cyan }]]),
     T(x1, 2.12, pw, 0.4, "REAL ROBOT", { size: 18, b: true, c: K.muted, spacing: 2 }),
-    T(x2, 2.12, sw, 0.4, "LAKE DEMO", { size: 18, b: true, c: K.muted, spacing: 2 }),
+    T(x2, 2.12, sw, 0.4, "LAKE SURDUC (MAP)", { size: 18, b: true, c: K.muted, spacing: 2 }),
     T(x3, 2.12, sw, 0.4, "SEA & COAST (CONCEPT)", { size: 18, b: true, c: K.muted, spacing: 2 }),
   ];
   if (photo) {
@@ -189,7 +189,7 @@ slides.push({
     els.push(IMG(x, y, sw, ph, path.join(ROOT, "assets", "screenshots", f), f.includes("sea") ? "Demo app, sea and coast concept, SIMULATED data" : "Demo app, lake dive, SIMULATED data"));
   });
   els.push(T(x1, 5.22, pw, 0.75, "Real robot: Arduino, 2 thrusters, 7.5 m tether.", { size: 20 }));
-  els.push(T(x2, 5.22, sw, 0.75, "Bloom flagged in the north bay. Sample there.", { size: 20 }));
+  els.push(T(x2, 5.22, sw, 0.75, "Real map. Simulated bloom flagged in the west coves.", { size: 20 }));
   els.push(T(x3, 5.22, sw, 0.75, "Algae near a shellfish farm. Harbor: sample for lab.", { size: 20 }));
   const pw2 = (CW - 0.3) / 2;
   els.push(R(MX, 6.12, pw2, 0.62, { fill: K.card, line: K.teal, lw: 1.5, r: 0.31 }));
@@ -199,7 +199,7 @@ slides.push({
   els.push(...chrome(4, TOTAL).map(e => (e.k === "text" ? { ...e, y: 6.95 } : e)));
   slides.push({
     els,
-    notes: `[0:55 to 1:45, switch to the live app]\nThis is our prototype: a real robot with real temperature, turbidity and TDS sensors. The app runs a simulated dive, clearly labeled. Watch the index rise: the north bay turns orange. We flag it, sample right there. Same platform in the sea: algae near a shellfish farm, and near the harbor where we can't measure metals live, so we send a sample to the lab.\n\nBackup: if the app or USB fails, play the 30 second screen recording and keep talking.`,
+    notes: `[0:55 to 1:45, switch to the live app]\nThis is our prototype: a real robot with real temperature, turbidity and TDS sensors. The app runs a simulated dive, clearly labeled. This is the real map of Lake Surduc, with simulated readings. Watch the index rise: the west coves turn orange. We flag it, sample right there. Same platform in the sea: algae near a shellfish farm, and near the harbor where we can't measure metals live, so we send a sample to the lab.\n\nBackup: if the app or USB fails, play the 30 second screen recording and keep talking.`,
   });
 })();
 
