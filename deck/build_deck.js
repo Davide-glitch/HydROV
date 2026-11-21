@@ -55,12 +55,17 @@ function iconSvg(name, color, px) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${px}" height="${px}" fill="none" stroke="#${color}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
 }
 const LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="PX" height="PX"><circle cx="20" cy="20" r="18" fill="none" stroke="#22D3EE" stroke-width="2.5"/><path d="M7 23c4-4 8-4 13 0s9 4 13 0" fill="none" stroke="#2DD4A8" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="14" r="3" fill="#22D3EE"/></svg>`;
+const ROV_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="PX" height="PX" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c34 0 52 8 66 34" stroke="#8FA3BF" stroke-width="3"/><rect x="66" y="40" width="108" height="20" rx="10" fill="#0F2943" stroke="#22D3EE" stroke-width="3.5"/><rect x="58" y="56" width="124" height="54" rx="16" fill="#12355A" stroke="#22D3EE" stroke-width="4"/><circle cx="160" cy="83" r="14" fill="#06101D" stroke="#22D3EE" stroke-width="4"/><circle cx="160" cy="83" r="5.5" fill="#22D3EE"/><rect x="22" y="68" width="34" height="30" rx="9" fill="#0F2943" stroke="#2DD4A8" stroke-width="4"/><rect x="184" y="68" width="34" height="30" rx="9" fill="#0F2943" stroke="#2DD4A8" stroke-width="4"/><path d="M30 76v14M48 76v14M192 76v14M210 76v14" stroke="#2DD4A8" stroke-width="3"/><rect x="78" y="110" width="16" height="22" rx="5" fill="#2DD4A8"/><rect x="104" y="110" width="16" height="26" rx="5" fill="#22D3EE"/><rect x="130" y="110" width="16" height="22" rx="5" fill="#1E82FF"/><path d="M84 72h52M84 86h40" stroke="#8FA3BF" stroke-width="3" stroke-opacity=".6"/></svg>`;
+
 function avatarSvg(kind) {
-  const hairBack = kind === "f" ? '<path d="M30 48C30 30 39 22 50 22s20 8 20 26v24H30z" fill="#22D3EE"/>' : "";
-  const hairTop = kind === "f"
-    ? '<path d="M36.2 41.5c1.4-7.3 7-11.6 13.8-11.6s12.4 4.3 13.8 11.6c-4.4-3-9-4.4-13.8-4.4s-9.4 1.4-13.8 4.4z" fill="#22D3EE"/>'
-    : '<path d="M36 41c0-8 6-12.5 14-12.5S64 33 64 41c-4-3.2-8.8-4.6-14-4.6S40 37.8 36 41z" fill="#22D3EE"/>';
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="PX" height="PX"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#c)"><rect width="100" height="100" fill="#0F2943"/>${hairBack}<path d="M18 100c1-17 14-28 32-28s31 11 32 28z" fill="#2DD4A8"/><rect x="45" y="55" width="10" height="18" rx="3" fill="#C9D8EA"/><circle cx="50" cy="46" r="14" fill="#EEF4FF"/>${hairTop}</g></svg>`;
+  const hair = "#0A1A2C", skin = "#E9F0F8", shade = "#C9D6E6";
+  const back = kind === "f"
+    ? `<path d="M29.5 46C29.5 26 38.5 17.5 50 17.5S70.5 26 70.5 46c0 9 1.6 15.5 4 20.5-6.5 3.5-15 4.5-24.5 4.5s-18-1-24.5-4.5c2.4-5 4-11.5 4-20.5z" fill="${hair}"/>`
+    : "";
+  const top = kind === "f"
+    ? `<path d="M34 43c0-12.5 6.8-19.5 16.5-19.5 9 0 15.5 6.5 15.5 18-3.5-5.8-9.5-9-17-9.5-6 2.5-11 6.2-15 11z" fill="${hair}"/>`
+    : `<path d="M33.6 41.5C33 28 40.5 20.5 50.5 20.5c9.6 0 16.6 6.8 16 20.5-2.6-5.2-6.6-8.6-11.6-9.6-6.2 2.6-13.6 3.6-21.3 10.1z" fill="${hair}"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="PX" height="PX"><defs><clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2DD4A8"/><stop offset="1" stop-color="#1FB894"/></linearGradient></defs><g clip-path="url(#c)"><rect width="100" height="100" fill="#163E66"/>${back}<path d="M12 104c0-19 15.5-33 38-33s38 14 38 33z" fill="url(#g)"/><path d="M41 71.5 50 82l9-10.5c-2.7-.6-5.7-.9-9-.9s-6.3.3-9 .9z" fill="${shade}"/><rect x="43.5" y="56" width="13" height="17" rx="5" fill="${shade}"/><ellipse cx="50" cy="44" rx="15.5" ry="17.5" fill="${skin}"/>${top}</g><circle cx="50" cy="50" r="48.5" fill="none" stroke="#22D3EE" stroke-opacity=".55" stroke-width="2"/></svg>`;
 }
 
 // ---------- element builders ----------
@@ -115,15 +120,15 @@ slides.push({
     els: [
       eyebrow("THE PROBLEM"),
       headline([["Dangerous water looks ", {}], ["safe.", { c: K.cyan }]]),
-      T(MX, 1.95, 5.5, 2.1, "78%", { size: 120, b: true, c: K.cyan }),
-      T(MX, 4.05, 5.4, 1.45, "of Europe's inland bathing waters are rated \"excellent\" from just 2 bacteria tests.", { size: 28 }),
-      T(MX, 5.55, 5.4, 0.65, "88% on the coast. Source: EEA, European bathing water quality in 2025.", { size: 18, c: K.muted }),
-      ...card(2.15, "person", "People", "Toxins hit nerves and liver.\nMetals harm kidneys. Cancer risk."),
-      ...card(4.3, "fish", "Nature", "Blooms and low oxygen kill fish.\nPollution builds up in food chains."),
-      T(MX, 6.35, CW, 0.5, "Between samples, nobody is watching.", { size: 30, b: true, align: "center" }),
+      T(MX, 1.75, 5.5, 1.95, "78%", { size: 120, b: true, c: K.cyan }),
+      T(MX, 3.72, 5.4, 1.45, "of Europe's inland bathing waters are rated \"excellent\" from just 2 bacteria tests.", { size: 28 }),
+      T(MX, 5.2, 5.4, 0.95, "88% on the coast. Source: EEA, 2025.\nStandards: WHO, EU Directive 2008/105/EC, EU shellfish biotoxin limits, Romanian Order 161/2006.", { size: 18, c: K.muted }),
+      ...card(2.05, "person", "People", "Toxins hit nerves and liver.\nMetals harm kidneys. Cancer risk."),
+      ...card(4.2, "fish", "Nature", "Blooms and low oxygen kill fish.\nPollution builds up in food chains."),
+      T(MX, 6.35, CW, 0.5, "The gap: no precise data on risks to people and nature.", { size: 30, b: true, align: "center" }),
       ...chrome(2, TOTAL),
     ],
-    notes: `[0:15 to 0:35]\nWhat harms people and nature isn't on that test: toxins that attack the nervous system and the liver, metals like mercury and arsenic, fuel and pesticides. In the sea, toxins reach us through shellfish. Between samples, nobody is watching.`,
+    notes: `[0:15 to 0:35]\nWhat harms people and nature isn't on that test: toxins that attack the nervous system and the liver, metals like mercury and arsenic, fuel and pesticides. In the sea, toxins reach us through shellfish. Between samples, nobody is watching. The real gap is precise data on the risks to people and nature.`,
   });
 })();
 
@@ -176,8 +181,8 @@ slides.push({
     els.push({ k: "img", x: x1, y, w: pw, h: ph, file: path.join(photoDir, photo), cover: true });
   } else {
     els.push(R(x1, y, pw, ph, { fill: K.card, line: K.line, lw: 1, r: 0.12 }));
-    els.push(I(x1 + pw / 2 - 0.6, y + 0.55, 1.2, "rov", K.cyan));
-    els.push(T(x1, y + 1.8, pw, 0.4, "Prototype photo", { size: 18, c: K.muted, align: "center" }));
+    els.push(S(x1 + 0.22, y + 0.2, pw - 0.44, (pw - 0.44) * 2 / 3, ROV_SVG, "rov-drawing"));
+    els.push(T(x1, y + ph - 0.42, pw, 0.35, "Schematic", { size: 18, c: K.muted, align: "center" }));
   }
   [[x2, "app-lake.png"], [x3, "app-sea.png"]].forEach(([x, f]) => {
     els.push(R(x - 0.03, y - 0.03, sw + 0.06, ph + 0.06, { fill: K.line, r: 0.06 }));
@@ -295,33 +300,31 @@ We start with lakes, where one scan takes a morning. The big prize is the world'
   });
 })();
 
-// 8. Team (name + role only, Carmina first)
+// 8. Team (name + role only, order set by the founder, Carmina first)
 (() => {
   const team = [
     ["Carmina-Izabela\nCrăciun", "Founder", "f"],
-    ["Marina-Adriana\nMercioni", "Medical Advisor", "f"],
-    ["Daria\nMihalescu", "Business Administration", "f"],
     ["Rebeca\nCiurescu", "Electronics Engineer", "f"],
     ["Davide\nLuca-Sfia", "Software Architect", "m"],
+    ["Marina-Adriana\nMercioni", "Medical Advisor", "f"],
+    ["Daria\nMihalescu", "Business Administration", "f"],
   ];
-  const cw = 3.85, ch = 1.95, g = (CW - 3 * cw) / 2;
+  const x0 = 0.6, g = 0.12, cw = (W - 2 * x0 - 4 * g) / 5, y = 2.3, ch = 3.85, av = 1.55;
   const els = [
     eyebrow("TEAM"),
     headline([["The people behind ", {}], [NAME, { c: K.cyan }]]),
   ];
   team.forEach(([n, role, kind], i) => {
-    const row = i < 3 ? 0 : 1;
-    const x = row === 0 ? MX + i * (cw + g) : (W - (2 * cw + g)) / 2 + (i - 3) * (cw + g);
-    const y = row === 0 ? 2.45 : 4.65;
-    els.push(R(x, y, cw, ch, { fill: K.card, r: 0.18 }));
-    els.push(S(x + 0.18, y + (ch - 1.12) / 2, 1.12, 1.12, avatarSvg(kind), "avatar-" + kind));
-    els.push(T(x + 1.4, y + 0.22, cw - 1.55, 0.85, n, { size: 24, b: true }));
-    els.push(T(x + 1.4, y + 1.1, cw - 1.55, 0.75, role, { size: 20, c: K.cyan }));
+    const x = x0 + i * (cw + g);
+    els.push(R(x, y, cw, ch, { fill: K.card, line: i === 0 ? K.cyan : null, lw: 1.5, r: 0.18 }));
+    els.push(S(x + (cw - av) / 2, y + 0.28, av, av, avatarSvg(kind), "avatar-" + kind));
+    els.push(T(x + 0.05, y + 2.0, cw - 0.1, 0.85, n, { size: 22, b: true, align: "center" }));
+    els.push(T(x + 0.05, y + 2.9, cw - 0.1, 0.75, role, { size: 20, c: K.cyan, align: "center" }));
   });
   els.push(...chrome(8, TOTAL));
   slides.push({
     els,
-    notes: `[2:50 to 3:00]\nBehind this are five of us, covering medicine, business, electronics and software.\n(Do not read the titles. Move to the last slide.)`,
+    notes: `[2:50 to 3:00]\nBehind this are five of us, covering electronics, software, medicine and business.\n(Do not read the titles. Move to the last slide.)`,
   });
 })();
 

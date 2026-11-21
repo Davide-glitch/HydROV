@@ -60,6 +60,8 @@ details.conn[open] summary{border-color:var(--cyan)}
 .big.flag.ready{background:var(--amber);color:#1B1200}
 .big:disabled{opacity:.4;cursor:default}
 .subctl{display:flex;gap:8px;margin-top:8px;align-items:center;color:var(--muted);font-size:13px}
+.subctl.profile{margin-top:10px}
+.subctl select{font:inherit;font-size:13px;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 8px;max-width:230px}
 .subctl button{background:none;border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:13px;color:var(--muted)}
 .subctl button.on{color:var(--text);border-color:var(--cyan)}
 .idxBox{text-align:center;min-width:150px}
@@ -197,7 +199,16 @@ table.scans button{background:var(--card2);border:1px solid var(--line);border-r
         <div class="levelChip" id="idxLevel" style="background:#1A3A5A;color:#8FA3BF">Ready</div>
       </div>
       <div class="verdict" id="verdict">Ready. Press Start dive.<small id="verdictSub"></small></div>
-      <div><button class="big flag" id="btnFlag" disabled>Flag and sample here</button></div>
+      <div>
+        <button class="big flag" id="btnFlag" disabled>Flag and sample here</button>
+        <label class="subctl profile">Advice for
+          <select id="profile">
+            <option value="lake">Lake or bathing-water manager</option>
+            <option value="farm">Fish or shellfish farm</option>
+            <option value="water">Drinking-water operator</option>
+          </select>
+        </label>
+      </div>
     </div>
 
     <div class="grid">
@@ -406,13 +417,32 @@ function scorePoint(p, sc){
   p.shown = (p.level==='low' && p.unusual) ? 'watch' : p.level;
   return p;
 }
+/* Who reads the result. Suggestions only: the lab confirms and the manager decides. */
+const PROFILES = {
+  lake:  { name:'Lake or bathing-water manager',
+           high:'Suggested: keep swimmers away from this area until the lab result is back.',
+           watch:'Suggested: sample here and check this spot again on the next scan.' },
+  farm:  { name:'Fish or shellfish farm',
+           high:'Suggested: hold harvest from this area until the lab result is back.',
+           watch:'Suggested: sample near the cages and keep an eye on oxygen.' },
+  water: { name:'Drinking-water operator',
+           high:'Suggested: check the intake and treatment until the lab result is back.',
+           watch:'Suggested: sample near the intake and keep an eye on turbidity.' }
+};
+const UNUSUAL_HINT = 'We cannot measure metals or fuel residues live. The lab can.';
 function verdictFor(p, sc){
+  const pr = PROFILES[S.profile] || PROFILES.lake;
   if(p.shown==='high') return sc.id==='sea'
-    ? ['High: algae near the shellfish farm. Sample now. Lab confirms.','Algal toxins can reach people through shellfish.']
-    : ['High: do not swim. Sample now. Lab confirms.','Strong bloom signal, warm water, low oxygen.'];
-  if(p.unusual) return ['Watch: unusual water near the harbor. Sample for lab (metals, hydrocarbons).','We cannot measure metals or fuel residues live. The lab can.'];
-  if(p.shown==='watch') return [sc.id==='sea' ? 'Watch: algae signal rising. Sample here.' : 'Watch: sample here.','The index is in the Watch band.'];
+    ? ['High: algae near the shellfish farm. Sample now. Lab confirms.', pr.high]
+    : ['High: do not swim. Sample now. Lab confirms.', pr.high];
+  if(p.unusual) return ['Watch: unusual water near the harbor. Sample for lab (metals, hydrocarbons).', UNUSUAL_HINT];
+  if(p.shown==='watch') return [sc.id==='sea' ? 'Watch: algae signal rising. Sample here.' : 'Watch: sample here.', pr.watch];
   return ['Looks OK. Keep scanning.','No warning signs at this point.'];
+}
+function actionFor(p){
+  const pr = PROFILES[S.profile] || PROFILES.lake;
+  if(p.unusual && p.level==='low') return 'Sample for lab (metals, hydrocarbons)';
+  return 'Sample for lab (algal toxins, bacteria). '+(p.shown==='high'?pr.high:pr.watch).replace('Suggested: ','');
 }
 function autoFlags(points){
   const flags=[]; let prev=0, last=-99;
@@ -427,7 +457,7 @@ function summarize(points, flags){
 }
 
 /* ---------- state ---------- */
-const S = { sc:'lake', tab:'dive', points:[], step:-1, running:false, timer:null, speed:1,
+const S = { sc:'lake', profile:'lake', tab:'dive', points:[], step:-1, running:false, timer:null, speed:1,
   flags:[], events:[], selected:null, prevRank:0, lastFlag:-99, alert:null, saved:false,
   live:{mode:null, temp:null, turb:null, tds:null, at:0, port:null, reader:null, replayTimer:null} };
 const sc = () => SCENARIOS[S.sc];
@@ -709,14 +739,15 @@ function openReport(scan){
   const tmp=document.createElementNS('http://www.w3.org/2000/svg','svg'); tmp.setAttribute('viewBox','0 0 1000 620');
   drawMap(tmp, s, scan.points, scan.points.length-1, scan.flags, {static:true, pal:LIGHT, r:7});
   const keys=s.cards;
-  const rows=scan.flags.map(f=>{ const p=scan.points[f.i]; return '<tr><td>'+(p.i+1)+'</td><td>'+p.depth.toFixed(1)+'</td><td>'+p.index+' '+LEVEL_NAME[p.shown]+'</td>'+keys.filter(k=>k!=='depth').map(k=>'<td>'+CARDS[k].fmt(p[CARDS[k].key])+((p.live||[]).includes(k)?' (live)':'')+'</td>').join('')+'<td>'+(p.unusual&&p.level==='low'?'Sample for lab (metals, hydrocarbons)':'Sample for lab (algal toxins, bacteria)')+(f.sampled?', sample taken':'')+'</td></tr>'; }).join('');
-  $('report').innerHTML='<h1>'+esc(C.projectName)+' screening report</h1><div>'+esc(s.waterBody)+' · scan date '+scan.date+' · '+(s.id==='sea'?'Sea & coast (concept)':'Lake')+'</div>'+
+  const rows=scan.flags.map(f=>{ const p=scan.points[f.i]; return '<tr><td>'+(p.i+1)+'</td><td>'+p.depth.toFixed(1)+'</td><td>'+p.index+' '+LEVEL_NAME[p.shown]+'</td>'+keys.filter(k=>k!=='depth').map(k=>'<td>'+CARDS[k].fmt(p[CARDS[k].key])+((p.live||[]).includes(k)?' (live)':'')+'</td>').join('')+'<td>'+esc(actionFor(p))+(f.sampled?' Sample taken.':'')+'</td></tr>'; }).join('');
+  $('report').innerHTML='<h1>'+esc(C.projectName)+' screening report</h1><div>'+esc(s.waterBody)+' · scan date '+scan.date+' · '+(s.id==='sea'?'Sea & coast (concept)':'Lake')+' · prepared for: '+esc((PROFILES[S.profile]||PROFILES.lake).name)+'</div>'+
     '<div class="sim">SIMULATED DATA. Values are generated by the demo app, not measured'+(scan.points.some(p=>(p.live||[]).length)?', except values marked (live)':'')+'.'+(s.id==='sea'?' Concept: salt-water modules planned. Prototype is freshwater.':'')+'</div>'+
     '<p>Highest index: <b>'+sm.max+' ('+LEVEL_NAME[sm.level]+')</b> · average '+sm.mean+' · flagged points: <b>'+sm.flags+'</b> · points scanned: '+scan.points.length+'</p>'+
     tmp.outerHTML+
     '<h3>Flagged points</h3><table><tr><th>Point</th><th>Depth m</th><th>Index</th>'+keys.filter(k=>k!=='depth').map(k=>'<th>'+CARDS[k].nm.replace(' (bloom signal)','')+' '+CARDS[k].u+'</th>').join('')+'<th>Action</th></tr>'+(rows||'<tr><td colspan="12">No points flagged.</td></tr>')+'</table>'+
     '<p class="disc">Screening only. Laboratory confirms. The manager decides.</p>'+
-    '<p>Screening index weights: bloom signal '+W.bloom+', temperature '+W.temperature+', dissolved oxygen '+W.oxygen+', turbidity '+W.turbidity+', pH '+W.ph+'. Weights are a heuristic, not yet validated. Turbidity is a raw sensor value, not calibrated.</p>';
+    '<p>Screening index weights: bloom signal '+W.bloom+', temperature '+W.temperature+', dissolved oxygen '+W.oxygen+', turbidity '+W.turbidity+', pH '+W.ph+'. Weights are a heuristic, not yet validated. Turbidity is a raw sensor value, not calibrated.</p>'+
+    '<p>Lab results are read against: WHO guidelines, EU Directive 2008/105/EC (environmental quality standards), EU limits for marine biotoxins in shellfish, Romanian Order 161/2006 (surface water quality classes).</p>';
   setTimeout(()=>window.print(), 50);
 }
 
@@ -789,7 +820,8 @@ document.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{
   S.speed=+b.dataset.speed; document.querySelectorAll('[data-speed]').forEach(x=>x.classList.toggle('on',x===b));
   if(S.running) startTimer();
 });
-document.querySelectorAll('#scenarioSeg button').forEach(b=>b.onclick=()=>{ if(S.sc===b.dataset.sc) return; S.sc=b.dataset.sc; cmpSel=null; newDive(); });
+function setProfile(v){ if(!PROFILES[v]) return; S.profile=v; $('profile').value=v; }
+document.querySelectorAll('#scenarioSeg button').forEach(b=>b.onclick=()=>{ if(S.sc===b.dataset.sc) return; S.sc=b.dataset.sc; setProfile(S.sc==='sea'?'farm':'lake'); cmpSel=null; newDive(); });
 document.querySelectorAll('#tabSeg button').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; renderAll(); });
 $('map').addEventListener('click',e=>{ const c=e.target.closest('circle[data-i]'); if(!c) return; S.selected=+c.dataset.i; renderLive(); });
 $('btnSerial').onclick=connectSerial;
@@ -800,6 +832,7 @@ $('fileLog').onchange=e=>{
   f.text().then(t=>{ const lines=t.split(/\r?\n/).filter(l=>/T:|TU:|TDS:/.test(l)); if(!lines.length){ $('connStatus').textContent='No lines like T:21.4,TU:312,TDS:180 found in that file.'; return; }
     startReplay(lines,'file','Replaying '+lines.length+' recorded lines from '+f.name+' at 1 per second.'); });
 };
+$('profile').onchange=e=>{ S.profile=e.target.value; renderVerdict(); };
 $('btnClearSaved').onclick=()=>{ const all=loadSaved(); delete all[S.sc]; writeSaved(all); cmpSel=null; renderHistory(); };
 document.addEventListener('keydown',e=>{ if(e.code==='Space' && e.target===document.body){ e.preventDefault(); $('btnStart').click(); } });
 setInterval(()=>{ if(S.live.mode && !S.running && S.step<0) renderSensors(null); }, 1000);
@@ -807,6 +840,7 @@ setInterval(()=>{ if(S.live.mode && !S.running && S.step<0) renderSensors(null);
 /* ---------- start, with URL options for screenshots: ?scenario=sea&jump=120&sample=1&tab=history ---------- */
 const q=new URLSearchParams(location.search);
 if(SCENARIOS[q.get('scenario')]) S.sc=q.get('scenario');
+setProfile(q.get('profile') || (S.sc==='sea'?'farm':'lake'));
 newDive();
 if(q.get('jump')){
   const to=Math.min(+q.get('jump'), C.diveSteps)-1;

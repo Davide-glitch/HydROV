@@ -22,24 +22,27 @@ We start with lakes, where one scan takes a morning. Coasts, seas and oceans are
 
 The screening index is a weighted heuristic, not yet validated: bloom signal 40, temperature 20, dissolved oxygen 20, turbidity 10, pH 10. Low is under 40, Watch is 40 to 69 and High is 70 and up. The chlorophyll-a anchors come from the WHO guideline values of 10 and 50 µg/L. Screening only. The laboratory confirms.
 
-## Open the demo app
+## Start the demo app
 
-Double-click `app/index.html`. Keep the `app` folder next to `config.js`.
+One command, from the repository folder (needs Python 3):
 
-- Press **Start dive**. The lake dive takes about 20 seconds at 1x.
+```
+python start.py
+```
+
+It starts a small server on `http://127.0.0.1:8000/app/` (localhost only, the next free port if 8000 is taken) and opens the app in Chrome or Edge. Everything works from there, including **Connect Arduino**. Press Ctrl+C to stop. On Windows you can also double-click `start.cmd`. The server only hands out the app and `config.js`, nothing else in the folder.
+
+Without Python, double-click `app/index.html`. Everything works except Connect Arduino. Keep the `app` folder next to `config.js`.
+
+- Press **Start dive** (or the space bar). The lake dive takes about 20 seconds at 1x.
 - Switch between **Lake** and **Sea & coast (concept)** at the top. The sea scenario is a concept. The prototype is freshwater.
+- **Advice for** picks who reads the result: a lake or bathing-water manager, a fish or shellfish farm, or a drinking-water operator. The suggested action changes to fit. The lab confirms and the manager decides.
 - **Flag and sample here** marks a sample point. A High reading that nobody acknowledges within 20 seconds triggers a simulated SMS to the manager.
 - The **History** tab shows past scans of the same water body, a season trend, a side-by-side comparison and a printable report (Export report, then save as PDF). Scans are kept in this browser only. Cloud sync is planned.
 
 ### With the Arduino (real sensors)
 
-Web Serial needs Chrome or Edge and a page served from localhost. From the repository folder:
-
-```
-python -m http.server 8000
-```
-
-Then open `http://localhost:8000/app/` and choose **Connect Arduino**, then **Connect via USB**. The sketch prints one line per second at 9600 baud:
+Start the app with `python start.py`, then choose **Connect Arduino**, then **Connect via USB**. The sketch prints one line per second at 9600 baud:
 
 ```
 T:21.4,TU:312,TDS:180
@@ -51,7 +54,7 @@ Sketch setup: open `arduino/serial_out/serial_out.ino` in the Arduino IDE and in
 
 ### Screenshots
 
-The app accepts URL options that jump straight to a state, for example `app/index.html?scenario=sea&jump=60&sample=1` or `app/index.html?tab=history`.
+The app accepts URL options that jump straight to a state, for example `app/?scenario=sea&jump=60&sample=1`, `app/?profile=water&jump=80` or `app/?tab=history`.
 
 ## Rebuild the deck
 
@@ -76,10 +79,21 @@ Customers pay for answers about their water. In order:
 
 Prices will be set after talks with pilot customers.
 
+## Sources and reference standards
+
+- European Environment Agency, *European bathing water quality in 2025*: 78% of inland and 88% of coastal bathing waters rated excellent.
+- WHO guideline values for cyanobacteria in recreational water (chlorophyll-a anchors of 10 and 50 µg/L).
+- EU Directive 2008/105/EC on environmental quality standards for priority substances in water.
+- EU food safety rules on marine biotoxins in shellfish.
+- Romanian Order 161/2006 (MMGA) on the classification of surface water quality, and the official reports of the National Administration "Romanian Waters" (ANAR).
+- Limnology literature and aquaculture guidelines.
+
+These standards are what lab results are read against. The demo app does not measure any of these substances.
+
 ## Team
 
 - Carmina-Izabela Crăciun: Founder
-- Marina-Adriana Mercioni: Medical Advisor
-- Daria Mihalescu: Business Administration
 - Rebeca Ciurescu: Electronics Engineer
 - Davide Luca-Sfia: Software Architect
+- Marina-Adriana Mercioni: Medical Advisor
+- Daria Mihalescu: Business Administration
