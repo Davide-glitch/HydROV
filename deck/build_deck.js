@@ -92,7 +92,7 @@ function iconDisc(x, y, d, name, color, fill = K.card2) {
 }
 
 // ---------- slides ----------
-const TOTAL = 9;
+const TOTAL = 10;
 const slides = [];
 
 // 1. Title
@@ -203,32 +203,33 @@ slides.push({
   });
 })();
 
-// 5. Money
+// 5. Money: where the money comes from (services first)
 (() => {
-  const tw = (CW - 0.25) / 2, th = 1.3, ys = [2.95, 4.45];
-  const tiles = [
-    ["service", "Monitoring service", "Per survey or per season", false],
-    ["wrench", "Maintenance & calibration", "Recurring contracts", false],
-    ["cloud", "Data subscription", "History, maps, alerts", true],
-    ["cube", "Modules & hardware", "Later", false],
+  const g = 0.25, cw = (CW - 2 * g) / 3, y = 2.05, ch = 3.72;
+  const models = [
+    ["service", "MAIN", "Services", "We scan, sample and report, per survey or season.", "Our time and a lab handling fee.", K.cyan, true],
+    ["wrench", "EVERY MONTH", "Subscription", "Maintenance, calibration, maps, history, alerts.", "Steady monthly income, low extra cost.", K.teal, false],
+    ["cube", "LATER", "Robot + sensors", "The robot, extra modules, a solar charging dock.", "Margin on hardware and on each module.", K.blue, false],
   ];
   const els = [
     eyebrow("HOW WE MAKE MONEY"),
-    headline([["You pay for ", {}], ["answers", { c: K.cyan }], ["\nabout your water.", {}]], 1.85),
+    headline([["We earn mostly from ", {}], ["services", { c: K.cyan }], [".", {}]]),
   ];
-  tiles.forEach(([ic, t, s, hi], i) => {
-    const x = MX + (i % 2) * (tw + 0.25), y = ys[Math.floor(i / 2)];
-    els.push(R(x, y, tw, th, { fill: K.card, line: hi ? K.cyan : null, lw: 2, r: 0.18 }));
-    els.push(...iconDisc(x + 0.25, y + (th - 0.75) / 2, 0.75, ic, K.cyan));
-    els.push(T(x + 1.2, y + 0.2, tw - 1.35, 0.52, t, { size: 28, b: true }));
-    els.push(T(x + 1.2, y + 0.75, tw - 1.35, 0.42, s, { size: 22, c: hi ? K.cyan : K.muted }));
+  models.forEach(([ic, tag, title, pays, profit, col, main], i) => {
+    const x = MX + i * (cw + g);
+    els.push(R(x, y, cw, ch, { fill: K.card, line: main ? K.cyan : null, lw: 2, r: 0.18 }));
+    els.push(...iconDisc(x + 0.25, y + 0.25, 0.7, ic, col));
+    els.push(T(x + 1.1, y + 0.42, cw - 1.3, 0.36, tag, { size: 18, b: true, c: col, spacing: 2 }));
+    els.push(T(x + 0.25, y + 1.08, cw - 0.4, 0.5, title, { size: 28, b: true }));
+    els.push(T(x + 0.25, y + 1.62, cw - 0.4, 1.0, [["Pays for: ", { b: true, c: K.muted }], [pays, {}]], { size: 20 }));
+    els.push(T(x + 0.25, y + 2.68, cw - 0.4, 0.95, [["Profit: ", { b: true, c: col }], [profit, {}]], { size: 20 }));
   });
-  els.push(T(MX, 5.95, CW, 0.42, "For lake managers, fish & shellfish farms, water operators, coastal authorities.", { size: 22, align: "center" }));
-  els.push(T(MX, 6.42, CW, 0.36, "Prices set after pilot talks.", { size: 18, c: K.muted, align: "center" }));
+  els.push(T(MX, 5.92, CW, 0.45, [["Mix: ", { b: true, c: K.cyan }], ["service first, then a monthly subscription. Robot sales once it is proven.", { b: true }]], { size: 24, align: "center" }));
+  els.push(T(MX, 6.42, CW, 0.36, "For lake managers, fish & shellfish farms, water operators, coastal authorities. Prices set after pilot talks.", { size: 18, c: K.muted, align: "center" }));
   els.push(...chrome(5, TOTAL));
   slides.push({
     els,
-    notes: `[1:45 to 2:10]\nCustomers pay for answers about their water. First a monitoring service, per survey or per season. Then maintenance and calibration contracts, and later modules. Our customers are lake managers, fish and shellfish farms, water operators and coastal authorities.`,
+    notes: `[1:45 to 2:10]\nMost of our money comes from services: we scan, sample and report, per survey or per season. On top of that comes a monthly subscription: maintenance, calibration, and the data, with maps, history and alerts. Selling or leasing the robot comes later, once it is proven. Our customers are lake managers, fish and shellfish farms, water operators and coastal authorities.`,
   });
 })();
 
@@ -300,6 +301,38 @@ We start with lakes, where one scan takes a morning. The big prize is the world'
   });
 })();
 
+// 8. Budget: what one pilot season costs (estimates)
+(() => {
+  const rows = [
+    ["Sensors and upgrades", "pH, oxygen, depth, sampler, housing", 0.45, 0.9],
+    ["Bloom sensor", "chlorophyll-a fluorometer", 1.5, 4.0],
+    ["Lab tests", "24 samples, accredited lab", 1.5, 3.0],
+    ["Boat, transport, insurance", "one lake, May to September", 0.5, 1.3],
+  ];
+  const lx = MX, bx = 5.25, bw = 5.0, tx = bx + bw + 0.25, MAXK = 4.0, y0 = 2.35, rh = 0.78;
+  const fmt = v => "€" + (v < 1 ? Math.round(v * 1000) : (Math.round(v * 10) / 10 + "k").replace(".0k", "k"));
+  const els = [
+    eyebrow("WHAT WE NEED"),
+    headline([["One pilot season: ", {}], ["€4k to €9k", { c: K.cyan }]]),
+  ];
+  rows.forEach(([label, sub, lo, hi], i) => {
+    const y = y0 + i * rh;
+    els.push(T(lx, y, 4.3, 0.42, label, { size: 24, b: true }));
+    els.push(T(lx, y + 0.4, 4.3, 0.32, sub, { size: 18, c: K.muted }));
+    els.push(R(bx, y + 0.14, bw * hi / MAXK, 0.4, { fill: K.card2, line: K.line, lw: 1, r: 0.08 }));
+    els.push(R(bx, y + 0.14, Math.max(0.12, bw * lo / MAXK), 0.4, { fill: K.cyan, r: 0.08 }));
+    els.push(T(tx, y + 0.08, W - MX - tx, 0.5, fmt(lo) + " to " + fmt(hi), { size: 22, b: true }));
+  });
+  els.push(R(MX, 5.55, CW, 0.7, { fill: K.card, r: 0.16 }));
+  els.push(T(MX, 5.55, CW, 0.7, [["Cheapest start: ", { b: true, c: K.cyan }], ["skip the bloom sensor, confirm blooms in the lab. About €2.5k to €5k.", { b: true }]], { size: 22, align: "center", valign: "middle" }));
+  els.push(T(MX, 6.38, CW, 0.4, "Later, paid by first customers: solar charging dock, salt-water modules. All figures are estimates until we have quotes.", { size: 18, c: K.muted, align: "center" }));
+  els.push(...chrome(8, TOTAL));
+  slides.push({
+    els,
+    notes: `[about 15 s]\nTo run one pilot season on one lake we need about four to nine thousand euro, mostly sensors and lab tests. The cheapest start is about half of that: we skip the bloom sensor and confirm blooms in the lab. The solar charging dock and the salt-water modules come later, paid for by the first customers.`,
+  });
+})();
+
 // 8. Team (name + role only, order set by the founder, Carmina first)
 (() => {
   const team = [
@@ -321,7 +354,7 @@ We start with lakes, where one scan takes a morning. The big prize is the world'
     els.push(T(x + 0.05, y + 2.0, cw - 0.1, 0.85, n, { size: 22, b: true, align: "center" }));
     els.push(T(x + 0.05, y + 2.9, cw - 0.1, 0.75, role, { size: 20, c: K.cyan, align: "center" }));
   });
-  els.push(...chrome(8, TOTAL));
+  els.push(...chrome(9, TOTAL));
   slides.push({
     els,
     notes: `[2:50 to 3:00]\nBehind this are five of us, covering electronics, software, medicine and business.\n(Do not read the titles. Move to the last slide.)`,
