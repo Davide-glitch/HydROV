@@ -186,7 +186,7 @@ slides.push({
   }
   [[x2, "app-lake.png"], [x3, "app-sea.png"]].forEach(([x, f]) => {
     els.push(R(x - 0.03, y - 0.03, sw + 0.06, ph + 0.06, { fill: K.line, r: 0.06 }));
-    els.push(IMG(x, y, sw, ph, path.join(ROOT, "assets", "screenshots", f), f.includes("sea") ? "Demo app, sea and coast concept, SIMULATED data" : "Demo app, lake dive, SIMULATED data"));
+    els.push(IMG(x, y, sw, ph, path.join(ROOT, "assets", "screenshots", f), f.includes("sea") ? "Demo app, sea and coast concept, simulated data (S)" : "Demo app, lake dive, simulated data (S)"));
   });
   els.push(T(x1, 5.22, pw, 0.75, "Real robot: Arduino, 2 thrusters, 7.5 m tether.", { size: 20 }));
   els.push(T(x2, 5.22, sw, 0.75, "Real map. Simulated bloom flagged in the west coves.", { size: 20 }));
@@ -195,7 +195,13 @@ slides.push({
   els.push(R(MX, 6.12, pw2, 0.62, { fill: K.card, line: K.teal, lw: 1.5, r: 0.31 }));
   els.push(T(MX, 6.12, pw2, 0.62, [["REAL: ", { c: K.teal, b: true }], ["temperature · turbidity · TDS", {}]], { size: 22, align: "center", valign: "middle" }));
   els.push(R(MX + pw2 + 0.3, 6.12, pw2, 0.62, { fill: K.card, line: K.amber, lw: 1.5, r: 0.31 }));
-  els.push(T(MX + pw2 + 0.3, 6.12, pw2, 0.62, [["SIMULATED: ", { c: K.amber, b: true }], ["everything else, labeled", {}]], { size: 22, align: "center", valign: "middle" }));
+  {
+    // Yellow "S" badge, the same mark the app uses for simulated values.
+    const px = MX + pw2 + 0.3, bd = 0.44, gap = 0.14, tw = 3.58, gx = px + (pw2 - (bd + gap + tw)) / 2;
+    els.push(E(gx, 6.12 + (0.62 - bd) / 2, bd, bd, { fill: K.amber }));
+    els.push(T(gx, 6.12 + (0.62 - bd) / 2, bd, bd, [["S", { c: "1B1200", b: true }]], { size: 18, align: "center", valign: "middle" }));
+    els.push(T(gx + bd + gap, 6.12, tw + 0.2, 0.62, "= simulated: everything else", { size: 22, valign: "middle" }));
+  }
   els.push(...chrome(4, TOTAL).map(e => (e.k === "text" ? { ...e, y: 6.95 } : e)));
   slides.push({
     els,
