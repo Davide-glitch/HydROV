@@ -41,6 +41,7 @@ details.conn[open] summary{border-color:var(--cyan)}
 .connMenu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:330px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:8px}
 .connMenu button,.connMenu label{display:block;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;cursor:pointer}
 .connMenu small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.connMenu button:disabled{opacity:.45;cursor:default}
 .connMenu input{display:none}
 .connStatus{font-size:13px;color:var(--muted);padding:2px 4px}
 
@@ -173,6 +174,7 @@ table.scans button{background:var(--card2);border:1px solid var(--line);border-r
         <button id="btnSerial">Connect via USB<small>Web Serial. Chrome or Edge, opened from localhost.</small></button>
         <label>Load a recorded log file<small>A text file of lines like T:21.4,TU:312,TDS:180</small><input type="file" id="fileLog" accept=".txt,.csv,.log"></label>
         <button id="btnReplay">Replay sample log<small>Backup if USB fails. Sample values are SIMULATED.</small></button>
+        <button id="btnRec" disabled>Record real readings<small>Connect via USB first. Replays cannot be recorded.</small></button>
         <button id="btnStopLive">Disconnect</button>
         <div class="connStatus" id="connStatus">Not connected. All values are simulated.</div>
       </div>
@@ -783,10 +785,55 @@ function parseLine(line){
 }
 function setConn(mode, msg){
   S.live.mode=mode; $('connStatus').textContent=msg;
-  $('connSummary').textContent = mode==='serial'?'Arduino: LIVE':mode==='file'?'Arduino: recorded log':mode==='sample'?'Arduino: sample replay':'Connect Arduino';
+  renderRec();
   renderLive();
 }
+
+/* ---------- recording: only real USB lines, never replays, so a saved log is always real data ---------- */
+const REC = { on:false, lines:[], started:null };
+function stamp(d){ const z=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+'-'+z(d.getMinutes())+'-'+z(d.getSeconds()); }
+function renderRec(){
+  const m=S.live.mode;
+  let sum = m==='serial'?'Arduino: LIVE':m==='file'?'Arduino: recorded log':m==='sample'?'Arduino: sample replay':'Connect Arduino';
+  if(REC.on) sum += ' · REC '+REC.lines.length;
+  $('connSummary').textContent=sum;
+  const b=$('btnRec');
+  b.disabled = m!=='serial' && !REC.on;
+  b.innerHTML = REC.on
+    ? 'Stop and save the log<small>'+REC.lines.length+' readings recorded since '+REC.started.toTimeString().slice(0,8)+'.</small>'
+    : 'Record real readings<small>'+(m==='serial'?'Saves what the Arduino sends to a log file you can replay later.':'Connect via USB first. Replays cannot be recorded.')+'</small>';
+}
+function recordLine(line){
+  if(!REC.on || S.live.mode!=='serial') return;
+  REC.lines.push(line.trim()+',AT:'+stamp(new Date()));
+  renderRec();
+}
+function startRecording(){
+  if(S.live.mode!=='serial'){ $('connStatus').textContent='Recording works only with the Arduino connected over USB, so a saved log only ever holds real readings.'; return; }
+  REC.on=true; REC.lines=[]; REC.started=new Date();
+  logEvent('Recording real sensor readings from the Arduino.', 'info');
+  renderRec();
+}
+function finishRecording(){
+  if(!REC.on) return;
+  REC.on=false;
+  const n=REC.lines.length;
+  if(!n){ $('connStatus').textContent='Recording stopped. No readings arrived, so there is nothing to save.'; renderRec(); return; }
+  const text=['# Sensor log recorded from the prototype over USB (real readings).',
+    '# Started '+REC.started.toString(),
+    '# Readings: '+n+' (temperature in C, turbidity raw, total dissolved solids in ppm)',
+    ...REC.lines].join('\n')+'\n';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'}));
+  a.download='sensor-log-'+stamp(REC.started)+'.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  logEvent('Saved '+n+' real readings to '+a.download+'.', 'sample');
+  $('connStatus').textContent='Saved '+n+' readings to '+a.download+'. Load it later with "Load a recorded log file".';
+  renderRec();
+}
 async function stopLive(){
+  finishRecording();
   if(S.live.replayTimer){ clearInterval(S.live.replayTimer); S.live.replayTimer=null; }
   try{ if(S.live.reader){ await S.live.reader.cancel(); S.live.reader=null; } }catch(e){}
   try{ if(S.live.port){ await S.live.port.close(); S.live.port=null; } }catch(e){}
@@ -794,7 +841,7 @@ async function stopLive(){
   setConn(null,'Not connected. All values are simulated.');
 }
 async function connectSerial(){
-  if(!('serial' in navigator)){ $('connStatus').textContent='Web Serial is not available here. Use Chrome or Edge and open the app from localhost (python -m http.server). Or use a replay.'; return; }
+  if(!('serial' in navigator)){ $('connStatus').textContent='Web Serial is not available here. Start the app with: python start.py (it opens Chrome or Edge on localhost). Or use a replay.'; return; }
   try{
     await stopLive();
     const port=await navigator.serial.requestPort(); await port.open({baudRate:9600});
@@ -804,9 +851,11 @@ async function connectSerial(){
     while(true){
       const {value,done}=await reader.read(); if(done) break;
       buf+=value; const lines=buf.split(/\r?\n/); buf=lines.pop();
-      lines.forEach(parseLine);
+      lines.forEach(l=>{ if(parseLine(l)) recordLine(l); });
     }
+    finishRecording();
   }catch(e){
+    finishRecording();
     $('connStatus').textContent='USB connection failed or closed ('+(e&&e.message||e)+'). Try a replay.';
     if(S.live.mode==='serial') setConn(null,'USB connection lost. All values are simulated.');
   }
@@ -846,9 +895,10 @@ $('map').addEventListener('click',e=>{ const c=e.target.closest('circle[data-i]'
 $('btnSerial').onclick=connectSerial;
 $('btnReplay').onclick=()=>startReplay(sampleLog(),'sample','Replaying a sample log at 1 line per second. These values are SIMULATED.');
 $('btnStopLive').onclick=stopLive;
+$('btnRec').onclick=()=>{ if(REC.on) finishRecording(); else startRecording(); };
 $('fileLog').onchange=e=>{
   const f=e.target.files[0]; if(!f) return;
-  f.text().then(t=>{ const lines=t.split(/\r?\n/).filter(l=>/T:|TU:|TDS:/.test(l)); if(!lines.length){ $('connStatus').textContent='No lines like T:21.4,TU:312,TDS:180 found in that file.'; return; }
+  f.text().then(t=>{ const lines=t.split(/\r?\n/).filter(l=>!/^\s*#/.test(l) && /T:|TU:|TDS:/.test(l)); if(!lines.length){ $('connStatus').textContent='No lines like T:21.4,TU:312,TDS:180 found in that file.'; return; }
     startReplay(lines,'file','Replaying '+lines.length+' recorded lines from '+f.name+' at 1 per second.'); });
 };
 $('profile').onchange=e=>{ S.profile=e.target.value; renderVerdict(); };

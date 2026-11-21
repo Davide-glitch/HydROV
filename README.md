@@ -49,7 +49,9 @@ Start the app with `python start.py`, then choose **Connect Arduino**, then **Co
 T:21.4,TU:312,TDS:180
 ```
 
-If USB fails during a demo, the same menu can replay a recorded log file or a built-in sample log. The sample log is labeled as simulated.
+**Record real readings.** With the Arduino connected over USB, choose **Record real readings** in the same menu, then **Stop and save the log**. The app saves a file like `sensor-log-2026-11-21T20-07-42.txt` with one timestamped line per reading. Only USB data can be recorded, never a replay, so a saved log always holds real measurements.
+
+If USB fails during a demo, the same menu can replay a recorded log file (shown as "REPLAY: recorded log") or a built-in sample log (labeled as simulated).
 
 Sketch setup: open `arduino/serial_out/serial_out.ino` in the Arduino IDE and install the **OneWire** and **DallasTemperature** libraries. Pin numbers are at the top of the file.
 
