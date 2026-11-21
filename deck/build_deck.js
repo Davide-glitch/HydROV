@@ -197,10 +197,10 @@ slides.push({
   els.push(R(MX + pw2 + 0.3, 6.12, pw2, 0.62, { fill: K.card, line: K.amber, lw: 1.5, r: 0.31 }));
   {
     // Yellow "S" badge, the same mark the app uses for simulated values.
-    const px = MX + pw2 + 0.3, bd = 0.44, gap = 0.14, tw = 3.58, gx = px + (pw2 - (bd + gap + tw)) / 2;
+    const px = MX + pw2 + 0.3, bd = 0.44, gap = 0.18, tw = 1.99, gx = px + (pw2 - (bd + gap + tw)) / 2;
     els.push(E(gx, 6.12 + (0.62 - bd) / 2, bd, bd, { fill: K.amber }));
     els.push(T(gx, 6.12 + (0.62 - bd) / 2, bd, bd, [["S", { c: "1B1200", b: true }]], { size: 18, align: "center", valign: "middle" }));
-    els.push(T(gx + bd + gap, 6.12, tw + 0.2, 0.62, "= simulated: everything else", { size: 22, valign: "middle" }));
+    els.push(T(gx + bd + gap, 6.12, tw + 0.2, 0.62, "everything else", { size: 22, valign: "middle" }));
   }
   els.push(...chrome(4, TOTAL).map(e => (e.k === "text" ? { ...e, y: 6.95 } : e)));
   slides.push({
