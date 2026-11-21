@@ -1,0 +1,19 @@
+# Confidential material. Never commit any of this.
+CLAUDE.md
+CLAUDE_CODE_BRIEF.md
+pitch_script.md
+ref/
+Data/
+data/
+assets/photos/
+
+# Local and build clutter
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.DS_Store
+Thumbs.db
+~$*
+.claude/settings.local.json
+.claude/

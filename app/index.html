@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo</title>
+<script src="../config.js"></script>
+<style>
+:root{
+  --bg:#06101D; --card:#0B2036; --card2:#0F2943; --line:#1A3A5A;
+  --cyan:#22D3EE; --teal:#2DD4A8; --blue:#1E82FF; --amber:#F5A623; --red:#FF5D5D;
+  --text:#EEF4FF; --muted:#8FA3BF;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,"Segoe UI",Lato,system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.4}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1640px;margin:0 auto;padding:0 20px 24px}
+
+/* header */
+header.top{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px 0 12px}
+.brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.brand svg{width:40px;height:40px;flex:none}
+.brand .name{font-size:26px;font-weight:800;letter-spacing:.2px}
+.brand .name .exp{font-weight:500;color:var(--muted);font-size:20px}
+.brand .tag{color:var(--muted);font-size:14px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button{background:none;border:0;padding:9px 16px;border-radius:9px;font-weight:600;color:var(--muted);font-size:15px}
+.seg button.on{background:var(--card2);color:var(--text);box-shadow:inset 0 0 0 1px var(--cyan)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.sim{color:var(--amber);border-color:rgba(245,166,35,.5)}
+.chip.live{color:#06101D;background:var(--teal);border-color:var(--teal)}
+.chip.replay{color:var(--cyan);border-color:var(--cyan)}
+.chip.real{color:var(--teal);border-color:rgba(45,212,168,.5)}
+.chip.planned{color:var(--muted)}
+details.conn{position:relative}
+details.conn summary{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer;font-size:15px}
+details.conn summary::-webkit-details-marker{display:none}
+details.conn[open] summary{border-color:var(--cyan)}
+.connMenu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:330px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:8px}
+.connMenu button,.connMenu label{display:block;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;cursor:pointer}
+.connMenu small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.connMenu input{display:none}
+.connStatus{font-size:13px;color:var(--muted);padding:2px 4px}
+
+/* banner */
+.banner{background:rgba(245,166,35,.09);border:1px solid rgba(245,166,35,.45);border-left:6px solid var(--amber);
+  border-radius:10px;padding:10px 16px;font-size:16px;margin-bottom:14px}
+.banner strong{color:var(--amber);letter-spacing:.5px}
+.banner .sea{display:block;color:var(--text);margin-top:2px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:auto auto 1fr auto;gap:22px;align-items:center;background:var(--card);
+  border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin-bottom:14px}
+.big{border:0;border-radius:14px;padding:20px 30px;font-size:22px;font-weight:800;min-width:210px}
+.big.start{background:var(--cyan);color:#04111F}
+.big.pause{background:var(--card2);color:var(--text);box-shadow:inset 0 0 0 2px var(--cyan)}
+.big.flag{background:var(--card2);color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
+.big.flag.ready{background:var(--amber);color:#1B1200}
+.big:disabled{opacity:.4;cursor:default}
+.subctl{display:flex;gap:8px;margin-top:8px;align-items:center;color:var(--muted);font-size:13px}
+.subctl button{background:none;border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:13px;color:var(--muted)}
+.subctl button.on{color:var(--text);border-color:var(--cyan)}
+.idxBox{text-align:center;min-width:150px}
+.idxBox .num{font-size:84px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.idxBox .lbl{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.levelChip{display:inline-block;margin-top:6px;font-size:16px;font-weight:800;padding:4px 14px;border-radius:999px;color:#06101D}
+.verdict{font-size:32px;font-weight:700;line-height:1.2}
+.verdict small{display:block;font-size:15px;color:var(--muted);font-weight:500;margin-top:6px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:7fr 5fr;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;position:relative}
+.card h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700;display:flex;gap:8px;align-items:center}
+.card h3 .grow{margin-left:auto}
+svg{display:block;width:100%;height:auto}
+.mapInfo{position:absolute;left:24px;bottom:22px;background:rgba(6,16,29,.92);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;min-width:230px;display:none}
+.mapInfo b{font-size:16px}
+.mapInfo table{border-collapse:collapse;margin-top:6px}
+.mapInfo td{padding:1px 10px 1px 0}
+.mapInfo td:first-child{color:var(--muted)}
+.mapInfo .x{position:absolute;right:8px;top:4px;background:none;border:0;color:var(--muted);font-size:18px}
+
+.sensors{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sensor{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.sensor.wide{grid-column:span 2}
+.sensor .top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.sensor .nm{font-weight:700;font-size:15px}
+.sensor .hw{font-size:12px;color:var(--muted)}
+.sensor .val{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15;margin:2px 0}
+.sensor .val .u{font-size:16px;font-weight:600;color:var(--muted);margin-left:4px}
+.sensor .chips{display:flex;gap:6px;flex-wrap:wrap}
+.sensor.liveOn{border-color:var(--teal)}
+
+.events{list-style:none;margin:0;padding:0;max-height:212px;overflow:auto;font-size:15px}
+.events li{display:grid;grid-template-columns:72px 12px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid rgba(26,58,90,.6);align-items:start}
+.events .t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px;padding-top:2px}
+.events .d{width:10px;height:10px;border-radius:50%;margin-top:6px}
+.events .empty{display:block;color:var(--muted);border:0}
+
+.foot{color:var(--muted);font-size:13px;margin-top:12px}
+
+/* alert toast */
+.toast{position:fixed;right:22px;top:22px;z-index:50;width:380px;background:#2A0E12;border:2px solid var(--red);border-radius:14px;padding:16px 18px;display:none}
+.toast.sent{background:var(--card);border-color:var(--amber)}
+.toast h4{margin:0 0 6px;font-size:19px}
+.toast p{margin:0 0 12px;font-size:15px}
+.toast button{background:var(--red);border:0;border-radius:10px;padding:10px 16px;font-weight:800;color:#1B0406}
+.toast.sent button{background:var(--card2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* history */
+.hist{display:grid;grid-template-columns:6fr 6fr;gap:14px}
+table.scans{width:100%;border-collapse:collapse;font-size:15px}
+table.scans th{text-align:left;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px;padding:6px 8px;border-bottom:1px solid var(--line)}
+table.scans td{padding:9px 8px;border-bottom:1px solid rgba(26,58,90,.6);vertical-align:middle}
+table.scans td.n{font-variant-numeric:tabular-nums;font-weight:700}
+table.scans button{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:13px}
+.dotL{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.cmp .stat{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px;font-size:14px;color:var(--muted)}
+.cmp .stat b{display:block;color:var(--text);font-size:24px}
+.histHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.histHead h2{margin:0;font-size:26px}
+.btn2{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:600;font-size:14px}
+.btn2.primary{border-color:var(--cyan);color:var(--cyan)}
+.hidden{display:none !important}
+
+@media (max-width:1100px){
+  .hero{grid-template-columns:1fr 1fr}
+  .verdict{grid-column:span 2}
+  .grid,.hist,.cmp{grid-template-columns:1fr}
+}
+
+/* printable report */
+#report{display:none}
+@media print{
+  body{background:#fff;color:#111}
+  body > *:not(#report){display:none !important}
+  #report{display:block;color:#111;font-size:12pt}
+  #report h1{font-size:20pt;margin:0 0 4px}
+  #report .sim{border:2px solid #C07A00;padding:6px 10px;margin:10px 0;font-weight:700}
+  #report table{border-collapse:collapse;width:100%;font-size:10pt}
+  #report th,#report td{border:1px solid #999;padding:3px 5px;text-align:left}
+  #report .disc{margin-top:14px;font-weight:700;font-size:13pt}
+  #report svg{max-height:9cm}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="#22D3EE" stroke-width="2.5"/><path d="M7 23c4-4 8-4 13 0s9 4 13 0" fill="none" stroke="#2DD4A8" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="14" r="3" fill="#22D3EE"/></svg>
+      <div>
+        <div class="name"><span id="pName"></span> <span class="exp">· <span id="pExp"></span></span></div>
+        <div class="tag" id="pTag"></div>
+      </div>
+    </div>
+    <div class="seg" id="scenarioSeg">
+      <button data-sc="lake" class="on">Lake</button>
+      <button data-sc="sea">Sea &amp; coast (concept)</button>
+    </div>
+    <div class="seg" id="tabSeg">
+      <button data-tab="dive" class="on">Dive</button>
+      <button data-tab="history">History</button>
+    </div>
+    <details class="conn" id="conn">
+      <summary id="connSummary">Connect Arduino</summary>
+      <div class="connMenu">
+        <button id="btnSerial">Connect via USB<small>Web Serial. Chrome or Edge, opened from localhost.</small></button>
+        <label>Load a recorded log file<small>A text file of lines like T:21.4,TU:312,TDS:180</small><input type="file" id="fileLog" accept=".txt,.csv,.log"></label>
+        <button id="btnReplay">Replay sample log<small>Backup if USB fails. Sample values are SIMULATED.</small></button>
+        <button id="btnStopLive">Disconnect</button>
+        <div class="connStatus" id="connStatus">Not connected. All values are simulated.</div>
+      </div>
+    </details>
+    <span class="chip" title="The demo stores scans in this browser only">Cloud sync: planned (demo stores locally)</span>
+  </header>
+
+  <div class="banner"><strong>SIMULATED DATA.</strong> Values are generated by the app, not measured. Real sensors on the prototype: temperature, turbidity, TDS.
+    <span class="sea hidden" id="seaNote">Concept: salt-water modules planned. Prototype is freshwater.</span></div>
+
+  <!-- DIVE TAB -->
+  <section id="tabDive">
+    <div class="hero">
+      <div>
+        <button class="big start" id="btnStart">Start dive</button>
+        <div class="subctl">Speed
+          <button data-speed="1" class="on">1x</button><button data-speed="2">2x</button><button data-speed="4">4x</button>
+          <button id="btnReset">Reset</button>
+        </div>
+      </div>
+      <div class="idxBox">
+        <div class="lbl">Screening index</div>
+        <div class="num" id="idxNum">--</div>
+        <div class="levelChip" id="idxLevel" style="background:#1A3A5A;color:#8FA3BF">Ready</div>
+      </div>
+      <div class="verdict" id="verdict">Ready. Press Start dive.<small id="verdictSub"></small></div>
+      <div><button class="big flag" id="btnFlag" disabled>Flag and sample here</button></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Risk map of the dive <span class="chip sim">SIMULATED</span><span class="grow" id="mapMeta"></span></h3>
+        <svg id="map" viewBox="0 0 1000 620" role="img" aria-label="Risk map"></svg>
+        <div class="mapInfo" id="mapInfo"></div>
+      </div>
+      <div class="card">
+        <h3>Readings <span class="grow" id="pointMeta"></span></h3>
+        <div class="sensors" id="sensors"></div>
+      </div>
+      <div class="card">
+        <h3>Index over the dive <span class="chip sim">SIMULATED</span></h3>
+        <svg id="timeline" viewBox="0 0 1000 230" role="img" aria-label="Index timeline"></svg>
+      </div>
+      <div class="card">
+        <h3>Events <span class="grow"><button class="btn2" id="btnReportLive">Export report</button></span></h3>
+        <ul class="events" id="events"></ul>
+      </div>
+    </div>
+    <div class="foot" id="indexNote"></div>
+  </section>
+
+  <!-- HISTORY TAB -->
+  <section id="tabHistory" class="hidden">
+    <div class="histHead">
+      <h2 id="histTitle"></h2>
+      <span class="chip sim">SIMULATED</span>
+      <span class="chip">Cloud sync: planned (demo stores locally)</span>
+      <span style="margin-left:auto"></span>
+      <button class="btn2" id="btnClearSaved">Clear saved demo scans</button>
+    </div>
+    <div class="hist">
+      <div class="card">
+        <h3>Scans of this water body</h3>
+        <table class="scans" id="scanTable"></table>
+        <div class="foot">Tick two scans to compare them.</div>
+      </div>
+      <div class="card">
+        <h3>Index across the season <span class="grow" style="text-transform:none;letter-spacing:0">
+          <span class="dotL" style="background:#22D3EE"></span>highest point &nbsp; <span class="dotL" style="background:#8FA3BF"></span>average</span></h3>
+        <svg id="trend" viewBox="0 0 1000 340"></svg>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Compare scans</h3>
+      <div class="cmp" id="cmp"></div>
+    </div>
+    <div class="foot">Each scan adds to the history of this water body. Trends and alerts get more useful as scans add up.</div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="report"></div>
+
+<script>
+(function(){
+"use strict";
+const C = window.PROJECT_CONFIG;
+if(!C){ document.body.innerHTML = '<p style="padding:40px;font-size:20px">config.js not found. Keep the app folder next to config.js.</p>'; return; }
+const W = C.index.weights, WHO = C.index.whoChlorophyll;
+document.title = C.projectName + " · " + C.expansion;
+document.getElementById('pName').textContent = C.projectName;
+document.getElementById('pExp').textContent = C.expansion;
+document.getElementById('pTag').textContent = C.tagline;
+
+const COLORS = { low:'#2DD4A8', watch:'#F5A623', high:'#FF5D5D' };
+const LEVEL_NAME = { low:'Low', watch:'Watch', high:'High' };
+const RANK = { low:0, watch:1, high:2 };
+const $ = id => document.getElementById(id);
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const lerp = (v,a,b) => clamp01((v-a)/(b-a));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function gauss(r){ let u=0,v=0; while(!u)u=r(); while(!v)v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+const g2 = (x,y,cx,cy,s) => Math.exp(-((x-cx)**2+(y-cy)**2)/(2*s*s));
+
+/* ---------- scenarios ---------- */
+const SCENARIOS = {
+  lake: {
+    id:'lake', waterBody:'Demo lake',
+    water:[[500,580],[650,565],[790,522],[880,440],[905,340],[862,252],[760,212],[665,192],[605,122],[522,58],[420,46],[330,74],[278,148],[296,222],[214,262],[148,342],[140,444],[200,522],[330,570]],
+    land:null,
+    waypoints:[[505,540],[390,475],[255,425],[240,335],[350,272],[440,195],[452,122],[372,104],[352,168],[482,150],[580,232],[700,282],[822,352],[772,462],[632,512],[510,545]],
+    labels:[{x:415,y:80,t:'North bay'},{x:505,y:606,t:'Dock'}],
+    ph:{lo:6.5,hi:8.0,span:1.2},
+    cards:['temp','turb','tds','depth','do','ph','chl'],
+    today:{seed:7, s:1.0, tBase:21},
+    history:[
+      {date:'2026-05-14', seed:11, s:0.15, tBase:16.5},
+      {date:'2026-06-04', seed:12, s:0.30, tBase:19},
+      {date:'2026-06-25', seed:13, s:0.50, tBase:21},
+      {date:'2026-07-16', seed:14, s:0.75, tBase:23},
+      {date:'2026-08-06', seed:15, s:0.95, tBase:24},
+      {date:'2026-08-27', seed:16, s:0.70, tBase:22.5}
+    ],
+    depth(i,x,y){
+      const P = g2(x,y,430,120,150);
+      const d0 = 1.5 + 0.9*Math.sin(i/8) + 0.5*Math.sin(i/21);
+      return Math.max(0.3, Math.min(3.6, d0*(1-P) + (2 + 0.25*Math.sin(i/5))*P));
+    },
+    fields(x,y,d,p,r){
+      const B = g2(x,y,430,120,95) * Math.exp(-((d-2)**2)/(2*1.2*1.2));
+      const b = p.s*B;
+      return {
+        chl: Math.max(0.5, 3 + 70*b + gauss(r)*1.0),
+        temp: p.tBase + 4*b - 0.5*d + gauss(r)*0.12,
+        do: Math.max(0.5, 8.8 - 4.6*b + gauss(r)*0.15),
+        ph: 7.6 + 1.4*b + gauss(r)*0.04,
+        turb: Math.round(350 + 1400*b + gauss(r)*25),
+        tds: Math.round(175 + 25*b + gauss(r)*3),
+        sal: null
+      };
+    }
+  },
+  sea: {
+    id:'sea', waterBody:'Demo coast',
+    water:null,
+    land:[[0,0],[1000,0],[1000,110],[900,132],[780,114],[660,142],[540,124],[430,152],[345,124],[312,62],[200,62],[168,140],[100,190],[0,222]],
+    piers:[[214,62,10,46],[262,62,10,38]],
+    farm:[640,330,170,110],
+    waypoints:[[250,110],[262,172],[380,214],[520,222],[640,262],[760,300],[872,360],[862,462],[740,502],[612,452],[520,372],[420,302],[302,240],[232,172],[250,112]],
+    labels:[{x:256,y:40,t:'Harbor'},{x:725,y:466,t:'Shellfish farm'}],
+    ph:{lo:7.8,hi:8.4,span:0.5},
+    cards:['temp','turb','sal','depth','do','ph','chl'],
+    today:{seed:21, s:1.0, tBase:18},
+    history:[
+      {date:'2026-06-10', seed:31, s:0.30, tBase:16},
+      {date:'2026-07-08', seed:32, s:0.60, tBase:19},
+      {date:'2026-08-05', seed:33, s:0.90, tBase:22},
+      {date:'2026-09-02', seed:34, s:0.60, tBase:20}
+    ],
+    depth(i,x,y){
+      const H = g2(x,y,250,140,90);
+      const d0 = 2.6 + 1.4*Math.sin(i/10) + 0.5*Math.sin(i/4.3);
+      return Math.max(0.5, Math.min(6, d0*(1-0.55*H)));
+    },
+    fields(x,y,d,p,r){
+      const A = g2(x,y,810,320,105), H = g2(x,y,250,150,115);
+      const a = p.s*A;
+      return {
+        chl: Math.max(0.3, 1.5 + 48*a + gauss(r)*0.8),
+        temp: p.tBase + 5*a - 0.3*d + gauss(r)*0.1,
+        do: Math.max(0.5, 7.8 - 3.6*a - 1.0*H + gauss(r)*0.12),
+        ph: 8.1 + 0.4*a - 0.15*H + gauss(r)*0.02,
+        turb: Math.round(350 + 500*a + 1150*H + gauss(r)*25),
+        tds: null,
+        sal: 36 - 4.5*H + gauss(r)*0.1
+      };
+    }
+  }
+};
+
+const CARDS = {
+  temp: {nm:'Temperature', u:'°C', hw:'DS18B20', status:'real', fmt:v=>v.toFixed(1), key:'temp'},
+  turb: {nm:'Turbidity', u:'raw', hw:'raw value, not calibrated', status:'real', fmt:v=>Math.round(v), key:'turb'},
+  tds:  {nm:'TDS', u:'ppm', hw:'TDS probe', status:'real', fmt:v=>Math.round(v), key:'tds'},
+  sal:  {nm:'Salinity', u:'PSU', hw:'CTD probe', status:'planned', fmt:v=>v.toFixed(1), key:'sal'},
+  depth:{nm:'Depth', u:'m', hw:'pressure sensor', status:'planned', fmt:v=>v.toFixed(1), key:'depth'},
+  do:   {nm:'Dissolved O₂', u:'mg/L', hw:'DO probe', status:'planned', fmt:v=>v.toFixed(1), key:'do'},
+  ph:   {nm:'pH', u:'', hw:'pH probe', status:'planned', fmt:v=>v.toFixed(2), key:'ph'},
+  chl:  {nm:'Chlorophyll-a (bloom signal)', u:'µg/L', hw:'fluorometer', status:'planned', fmt:v=>v.toFixed(1), key:'chl', wide:true}
+};
+const LIVE_KEYS = ['temp','turb','tds'];
+
+/* ---------- simulation ---------- */
+function buildPath(wps, n, r){
+  const seg=[]; let total=0;
+  for(let i=0;i<wps.length-1;i++){ const L=Math.hypot(wps[i+1][0]-wps[i][0], wps[i+1][1]-wps[i][1]); seg.push(L); total+=L; }
+  const out=[];
+  for(let k=0;k<n;k++){
+    let t=k/(n-1)*total, j=0;
+    while(j<seg.length-1 && t>seg[j]){ t-=seg[j]; j++; }
+    const f=Math.min(1,t/seg[j]), a=wps[j], b=wps[j+1];
+    out.push({x:a[0]+(b[0]-a[0])*f+gauss(r)*3, y:a[1]+(b[1]-a[1])*f+gauss(r)*3});
+  }
+  return out;
+}
+function simulateDive(sc, params){
+  const r = mulberry32(params.seed);
+  return buildPath(sc.waypoints, C.diveSteps, r).map((p,i)=>{
+    const depth = sc.depth(i,p.x,p.y);
+    return Object.assign({i, x:p.x, y:p.y, depth}, sc.fields(p.x,p.y,depth,params,r), {live:[]});
+  });
+}
+function bloomScore(chl){
+  if(chl<=5) return 0;
+  if(chl<=WHO.low) return 0.4*(chl-5)/(WHO.low-5);
+  return 0.4 + 0.6*clamp01((chl-WHO.low)/(WHO.moderate-WHO.low));
+}
+function scorePoint(p, sc){
+  const parts = {
+    bloom: bloomScore(p.chl),
+    temperature: lerp(p.temp,18,26),
+    oxygen: 1-lerp(p.do,4,8),
+    turbidity: lerp(p.turb,400,1800),
+    ph: p.ph>sc.ph.hi ? clamp01((p.ph-sc.ph.hi)/sc.ph.span) : p.ph<sc.ph.lo ? clamp01((sc.ph.lo-p.ph)/sc.ph.span) : 0
+  };
+  let idx=0; for(const k in W) idx += W[k]*parts[k];
+  p.index = Math.round(idx);
+  p.level = p.index>=C.index.high ? 'high' : p.index>=C.index.watch ? 'watch' : 'low';
+  // Sea only: water that looks unusual (fresh runoff, murky) near the harbor.
+  p.unusual = sc.id==='sea' && Math.max(clamp01((35.6-p.sal)/3), lerp(p.turb,700,1500)) >= 0.5;
+  p.shown = (p.level==='low' && p.unusual) ? 'watch' : p.level;
+  return p;
+}
+function verdictFor(p, sc){
+  if(p.shown==='high') return sc.id==='sea'
+    ? ['High: algae near the shellfish farm. Sample now. Lab confirms.','Algal toxins can reach people through shellfish.']
+    : ['High: do not swim. Sample now. Lab confirms.','Strong bloom signal, warm water, low oxygen.'];
+  if(p.unusual) return ['Watch: unusual water near the harbor. Sample for lab (metals, hydrocarbons).','We cannot measure metals or fuel residues live. The lab can.'];
+  if(p.shown==='watch') return [sc.id==='sea' ? 'Watch: algae signal rising. Sample here.' : 'Watch: sample here.','The index is in the Watch band.'];
+  return ['Looks OK. Keep scanning.','No warning signs at this point.'];
+}
+function autoFlags(points){
+  const flags=[]; let prev=0, last=-99;
+  points.forEach(p=>{ const rk=RANK[p.shown]; if(rk>prev && rk>0 && (p.i-last>=6 || rk===2)){ flags.push({i:p.i, auto:true, sampled:false}); last=p.i; } prev = rk===0 ? 0 : Math.max(prev,rk); });
+  return flags;
+}
+function summarize(points, flags){
+  const idx=points.map(p=>p.index);
+  return { max:Math.max(...idx), mean:Math.round(idx.reduce((a,b)=>a+b,0)/idx.length),
+    flags:flags.length, temp:points.reduce((a,p)=>a+p.temp,0)/points.length,
+    level: points.reduce((m,p)=>RANK[p.shown]>RANK[m]?p.shown:m,'low') };
+}
+
+/* ---------- state ---------- */
+const S = { sc:'lake', tab:'dive', points:[], step:-1, running:false, timer:null, speed:1,
+  flags:[], events:[], selected:null, prevRank:0, lastFlag:-99, alert:null, saved:false,
+  live:{mode:null, temp:null, turb:null, tds:null, at:0, port:null, reader:null, replayTimer:null} };
+const sc = () => SCENARIOS[S.sc];
+
+function newDive(){
+  stopTimer();
+  S.points = simulateDive(sc(), sc().today);
+  S.step=-1; S.flags=[]; S.events=[]; S.selected=null; S.prevRank=0; S.lastFlag=-99; S.saved=false;
+  clearAlert();
+  renderAll();
+}
+
+/* ---------- dive loop ---------- */
+function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer=null; } S.running=false; }
+function startTimer(){ stopTimer(); S.running=true; S.timer=setInterval(stepOnce, C.stepMs/S.speed); }
+function liveFresh(){ return S.live.mode && Date.now()-S.live.at < 3500 && S.sc==='lake'; }
+function nowLabel(){ const d=new Date(); return d.toTimeString().slice(0,8); }
+function logEvent(text, kind){ S.events.unshift({t:nowLabel(), text, kind:kind||'info'}); renderEvents(); }
+
+function stepOnce(opts){
+  opts = opts||{};
+  if(S.step >= S.points.length-1){ finishDive(opts); return; }
+  S.step++;
+  const p = S.points[S.step];
+  if(liveFresh()){
+    LIVE_KEYS.forEach(k=>{ if(S.live[k]!=null){ p[k]=S.live[k]; p.live.push(k); } });
+  }
+  scorePoint(p, sc());
+  if(S.step===0) logEvent('Dive started at the '+(S.sc==='lake'?'dock':'harbor')+'.', 'info');
+  const rk = RANK[p.shown];
+  if(rk>S.prevRank && rk>0 && (p.i-S.lastFlag>=6 || rk===2)){
+    S.flags.push({i:p.i, auto:true, sampled:false}); S.lastFlag=p.i;
+    logEvent('Auto-flag at point '+(p.i+1)+', '+p.depth.toFixed(1)+' m: index '+p.index+' ('+LEVEL_NAME[p.shown]+(p.unusual&&p.level==='low'?', unusual water':'')+').', p.shown);
+  }
+  if(rk===2 && S.prevRank<2 && !S.alert && !opts.noAlert) raiseAlert(p);
+  S.prevRank = rk===0 ? 0 : Math.max(S.prevRank, rk);
+  renderLive();
+  if(S.step >= S.points.length-1) finishDive(opts);
+}
+function finishDive(opts){
+  stopTimer();
+  if(!S.saved && S.step>=S.points.length-1){
+    S.saved=true;
+    const sm = summarize(S.points, S.flags);
+    logEvent('Dive complete. '+sm.flags+' spot'+(sm.flags===1?'':'s')+' flagged. Scan saved to history (stored locally).','info');
+    if(!(opts&&opts.noSave)) saveScan();
+  }
+  renderLive();
+}
+function flagHere(){
+  if(S.step<0) return;
+  const i = S.selected!=null && S.selected<=S.step ? S.selected : S.step;
+  const p = S.points[i];
+  let f = S.flags.find(f=>Math.abs(f.i-i)<=3);
+  if(!f){ f={i, auto:false, sampled:false}; S.flags.push(f); logEvent('Flag set by operator at point '+(i+1)+'.', 'watch'); }
+  if(!f.sampled){
+    f.sampled=true;
+    const what = p.unusual ? 'metals, hydrocarbons' : 'algal toxins, bacteria';
+    logEvent('Sample taken at point '+(i+1)+', '+p.depth.toFixed(1)+' m. Sent to lab for '+what+'. Lab result pending.', 'sample');
+  }
+  renderLive();
+}
+
+/* ---------- alert mock ---------- */
+function raiseAlert(p){
+  S.alert = {start:Date.now(), point:p.i, sent:false};
+  logEvent('High risk at point '+(p.i+1)+'. Waiting for operator acknowledgement.', 'high');
+  S.alert.timer = setInterval(tickAlert, 250); tickAlert();
+}
+function tickAlert(){
+  const a=S.alert; if(!a) return;
+  const t=$('toast');
+  if(!a.sent){
+    const left = Math.max(0, C.alertSeconds - Math.floor((Date.now()-a.start)/1000));
+    if(left<=0){
+      a.sent=true; logEvent('SMS sent to the manager (simulated).', 'high');
+      t.className='toast sent'; t.style.display='block';
+      t.innerHTML='<h4>SMS sent to the manager (simulated)</h4><p>Nobody acknowledged the High flag at point '+(a.point+1)+' within '+C.alertSeconds+' s.</p><button id="toastOk">Close</button>';
+      $('toastOk').onclick=clearAlert;
+      return;
+    }
+    t.className='toast'; t.style.display='block';
+    t.innerHTML='<h4>High risk flagged at point '+(a.point+1)+'</h4><p>If nobody acknowledges, an SMS goes to the manager in <b>'+left+' s</b> (simulated).</p><button id="toastAck">Acknowledge</button>';
+    $('toastAck').onclick=()=>{ logEvent('Alert acknowledged by the operator.', 'info'); clearAlert(); };
+  }
+}
+function clearAlert(){ if(S.alert&&S.alert.timer) clearInterval(S.alert.timer); S.alert=null; const t=$('toast'); t.style.display='none'; }
+
+/* ---------- rendering ---------- */
+function smoothClosed(pts){
+  const n=pts.length, f=v=>Math.round(v*10)/10;
+  let d='M'+pts[0][0]+','+pts[0][1];
+  for(let i=0;i<n;i++){
+    const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+    d+=' C'+f(p1[0]+(p2[0]-p0[0])/6)+','+f(p1[1]+(p2[1]-p0[1])/6)+' '+f(p2[0]-(p3[0]-p1[0])/6)+','+f(p2[1]-(p3[1]-p1[1])/6)+' '+p2[0]+','+p2[1];
+  }
+  return d+'Z';
+}
+function mapBase(s, pal){
+  let h='';
+  if(s.water){
+    h+='<rect width="1000" height="620" fill="'+pal.land+'"/>';
+    h+='<path d="'+smoothClosed(s.water)+'" fill="'+pal.water+'" stroke="'+pal.shore+'" stroke-width="3"/>';
+  } else {
+    h+='<rect width="1000" height="620" fill="'+pal.water+'"/>';
+    h+='<path d="'+s.land.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ')+'Z" fill="'+pal.land+'" stroke="'+pal.shore+'" stroke-width="3" stroke-linejoin="round"/>';
+    (s.piers||[]).forEach(p=>{ h+='<rect x="'+p[0]+'" y="'+p[1]+'" width="'+p[2]+'" height="'+p[3]+'" fill="'+pal.shore+'"/>'; });
+    const f=s.farm; h+='<rect x="'+f[0]+'" y="'+f[1]+'" width="'+f[2]+'" height="'+f[3]+'" fill="none" stroke="'+pal.label+'" stroke-width="2" stroke-dasharray="6 5"/>';
+    for(let k=1;k<6;k++){ const y=f[1]+k*f[3]/6; h+='<line x1="'+(f[0]+8)+'" y1="'+y+'" x2="'+(f[0]+f[2]-8)+'" y2="'+y+'" stroke="'+pal.label+'" stroke-opacity=".45" stroke-width="1.5"/>'; }
+  }
+  s.labels.forEach(l=>{ h+='<text x="'+l.x+'" y="'+l.y+'" fill="'+pal.label+'" font-size="22" font-weight="600" text-anchor="middle" font-family="Segoe UI,Inter,sans-serif">'+esc(l.t)+'</text>'; });
+  h+='<g transform="translate(950,58)"><path d="M0,-30 L11,6 L0,0 L-11,6Z" fill="'+pal.label+'"/><text y="28" fill="'+pal.label+'" font-size="20" font-weight="700" text-anchor="middle" font-family="Segoe UI,Inter,sans-serif">N</text></g>';
+  return h;
+}
+const DARK = {water:'#0F3150', land:'#08131F', shore:'#21486E', label:'#8FA3BF', path:'#3A5F84', bg:'#06101D'};
+const LIGHT = {water:'#DCEBF7', land:'#F4F4F0', shore:'#7A9BB8', label:'#33475B', path:'#8AA3BA', bg:'#ffffff'};
+function flagIcon(x,y){ return '<g transform="translate('+(x)+','+(y-12)+')"><line x1="0" y1="0" x2="0" y2="-26" stroke="#F5A623" stroke-width="3"/><path d="M0,-26 L18,-20 L0,-13Z" fill="#F5A623"/></g>'; }
+function drawMap(svg, s, points, upto, flags, opts){
+  opts=opts||{}; const pal=opts.pal||DARK; const r=opts.r||8;
+  let h=mapBase(s,pal);
+  const shown=points.slice(0,upto+1);
+  if(shown.length>1) h+='<polyline points="'+shown.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')+'" fill="none" stroke="'+pal.path+'" stroke-width="2"/>';
+  shown.forEach(p=>{ h+='<circle data-i="'+p.i+'" cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(S.selected===p.i&&!opts.static?r+4:r)+'" fill="'+COLORS[p.shown]+'" stroke="'+pal.bg+'" stroke-width="1.5" style="cursor:pointer"/>'; });
+  flags.filter(f=>f.i<=upto).forEach(f=>{ const p=points[f.i]; h+=flagIcon(p.x,p.y); });
+  if(!opts.static && upto>=0 && upto<points.length){
+    const p=points[upto];
+    h+='<circle cx="'+p.x+'" cy="'+p.y+'" r="16" fill="none" stroke="#EEF4FF" stroke-width="3"/>';
+  }
+  if(!opts.static && upto<0){
+    const p=points[0]; h+='<circle cx="'+p.x+'" cy="'+p.y+'" r="14" fill="none" stroke="#EEF4FF" stroke-width="3"/><text x="'+(p.x+24)+'" y="'+(p.y+7)+'" fill="#EEF4FF" font-size="20" font-family="Segoe UI,Inter,sans-serif">ROV ready</text>';
+  }
+  svg.innerHTML=h;
+}
+function drawTimeline(){
+  const svg=$('timeline'), n=C.diveSteps, L=48, R=985, T=14, B=196;
+  const X=i=>L+(R-L)*i/(n-1), Y=v=>B-(B-T)*v/100;
+  let h='';
+  h+='<rect x="'+L+'" y="'+Y(100)+'" width="'+(R-L)+'" height="'+(Y(C.index.high)-Y(100))+'" fill="#FF5D5D" fill-opacity=".12"/>';
+  h+='<rect x="'+L+'" y="'+Y(C.index.high)+'" width="'+(R-L)+'" height="'+(Y(C.index.watch)-Y(C.index.high))+'" fill="#F5A623" fill-opacity=".10"/>';
+  [[C.index.high,'High'],[C.index.watch,'Watch'],[0,'Low']].forEach(([v,t])=>{
+    h+='<text x="'+(L-8)+'" y="'+(Y(v)+(v?16:-4))+'" fill="#8FA3BF" font-size="15" text-anchor="end" font-family="Segoe UI,Inter,sans-serif">'+t+'</text>';
+  });
+  h+='<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="#1A3A5A" stroke-width="2"/>';
+  h+='<text x="'+L+'" y="'+(B+26)+'" fill="#8FA3BF" font-size="15" font-family="Segoe UI,Inter,sans-serif">start</text><text x="'+R+'" y="'+(B+26)+'" fill="#8FA3BF" font-size="15" text-anchor="end" font-family="Segoe UI,Inter,sans-serif">end of dive</text>';
+  S.flags.filter(f=>f.i<=S.step).forEach(f=>{ h+='<line x1="'+X(f.i)+'" y1="'+T+'" x2="'+X(f.i)+'" y2="'+B+'" stroke="#F5A623" stroke-width="2" stroke-dasharray="4 4"/>'; });
+  const pts=S.points.slice(0,S.step+1);
+  if(pts.length>1) h+='<polyline points="'+pts.map(p=>X(p.i).toFixed(1)+','+Y(p.index).toFixed(1)).join(' ')+'" fill="none" stroke="#22D3EE" stroke-width="3.5" stroke-linejoin="round"/>';
+  if(pts.length){ const p=pts[pts.length-1]; h+='<circle cx="'+X(p.i)+'" cy="'+Y(p.index)+'" r="7" fill="'+COLORS[p.shown]+'" stroke="#06101D" stroke-width="2"/>'; }
+  svg.innerHTML=h;
+}
+function renderSensors(p){
+  const s=sc(), live=S.live.mode && S.sc==='lake';
+  $('sensors').innerHTML = s.cards.map(k=>{
+    const c=CARDS[k];
+    let v=null, liveNow=false;
+    if(p) { v=p[c.key]; liveNow = p.live.includes(k); }
+    if(!p && live && LIVE_KEYS.includes(k) && S.live[k]!=null && liveFresh()){ v=S.live[k]; liveNow=true; }
+    const dataChip = liveNow
+      ? (S.live.mode==='serial' ? '<span class="chip live">LIVE</span>' : S.live.mode==='file' ? '<span class="chip replay">REPLAY: recorded log</span>' : '<span class="chip sim">SIMULATED replay</span>')
+      : '<span class="chip sim">SIMULATED</span>';
+    const hwChip = c.status==='real' ? '<span class="chip real">Real sensor</span>' : '<span class="chip planned">Probe planned</span>';
+    return '<div class="sensor'+(c.wide?' wide':'')+(liveNow&&S.live.mode==='serial'?' liveOn':'')+'"><div class="top"><span class="nm">'+c.nm+'</span><span class="hw">'+c.hw+'</span></div>'+
+      '<div class="val">'+(v==null?'--':c.fmt(v))+'<span class="u">'+c.u+'</span></div><div class="chips">'+hwChip+dataChip+'</div></div>';
+  }).join('');
+}
+function renderVerdict(){
+  const p=S.step>=0?S.points[S.step]:null, n=$('idxNum'), lv=$('idxLevel'), v=$('verdict');
+  const fb=$('btnFlag'), sb=$('btnStart');
+  if(!p){
+    n.textContent='--'; n.style.color='#EEF4FF'; lv.textContent='Ready'; lv.style.background='#1A3A5A'; lv.style.color='#8FA3BF';
+    v.innerHTML='Ready. Press Start dive.<small>'+(S.sc==='lake'?'Simulated dive of '+C.diveSteps+' points from the dock through the north bay.':'Simulated coastal dive: harbor, open water, shellfish farm.')+'</small>';
+  } else {
+    n.textContent=p.index; n.style.color=COLORS[p.shown];
+    lv.textContent=LEVEL_NAME[p.shown]; lv.style.background=COLORS[p.shown]; lv.style.color='#06101D';
+    const done=S.step>=S.points.length-1;
+    if(done){
+      const sm=summarize(S.points,S.flags), sampled=S.flags.filter(f=>f.sampled).length;
+      v.innerHTML='Dive complete. '+sm.flags+' spot'+(sm.flags===1?'':'s')+' flagged, '+sampled+' sampled.<small>Lab results pending. Highest index '+sm.max+'. Screening only: the lab confirms.</small>';
+    } else {
+      const [a,b]=verdictFor(p,sc()); v.innerHTML=esc(a)+'<small>'+esc(b)+'</small>';
+    }
+  }
+  fb.disabled = S.step<0;
+  const cur = p && S.flags.find(f=>Math.abs(f.i-S.step)<=3 && !f.sampled);
+  fb.classList.toggle('ready', !!(p && (p.shown!=='low' || cur)));
+  if(S.running){ sb.textContent='Pause'; sb.className='big pause'; }
+  else if(S.step>=S.points.length-1 && S.step>=0){ sb.textContent='New dive'; sb.className='big start'; }
+  else { sb.textContent=S.step<0?'Start dive':'Resume'; sb.className='big start'; }
+}
+function renderEvents(){
+  const col={info:'#8FA3BF', watch:'#F5A623', high:'#FF5D5D', sample:'#22D3EE', low:'#2DD4A8'};
+  $('events').innerHTML = S.events.length ? S.events.map(e=>'<li><span class="t">'+e.t+'</span><span class="d" style="background:'+(col[e.kind]||'#8FA3BF')+'"></span><span>'+esc(e.text)+'</span></li>').join('')
+    : '<li class="empty">Flags, samples and alerts will show up here.</li>';
+}
+function renderMapInfo(){
+  const box=$('mapInfo');
+  if(S.selected==null || S.selected>S.step){ box.style.display='none'; return; }
+  const p=S.points[S.selected], s=sc();
+  const rows=s.cards.map(k=>{ const c=CARDS[k]; return '<tr><td>'+c.nm.replace(' (bloom signal)','')+'</td><td>'+c.fmt(p[c.key])+' '+c.u+(p.live.includes(k)?' (live)':'')+'</td></tr>'; }).join('');
+  box.innerHTML='<button class="x" id="mapInfoX">×</button><b>Point '+(p.i+1)+'</b> · index <b style="color:'+COLORS[p.shown]+'">'+p.index+' '+LEVEL_NAME[p.shown]+'</b><table>'+rows+'</table>';
+  box.style.display='block';
+  $('mapInfoX').onclick=()=>{ S.selected=null; renderLive(); };
+}
+function renderLive(){
+  const p=S.step>=0?S.points[S.step]:null;
+  drawMap($('map'), sc(), S.points, S.step, S.flags);
+  drawTimeline(); renderSensors(S.selected!=null&&S.selected<=S.step?S.points[S.selected]:p); renderVerdict(); renderMapInfo();
+  $('pointMeta').textContent = p ? ('Point '+((S.selected!=null&&S.selected<=S.step?S.selected:S.step)+1)+' of '+C.diveSteps) : '';
+  $('mapMeta').textContent = sc().waterBody + ' · north up';
+}
+function renderAll(){
+  document.querySelectorAll('#scenarioSeg button').forEach(b=>b.classList.toggle('on', b.dataset.sc===S.sc));
+  document.querySelectorAll('#tabSeg button').forEach(b=>b.classList.toggle('on', b.dataset.tab===S.tab));
+  $('seaNote').classList.toggle('hidden', S.sc!=='sea');
+  $('tabDive').classList.toggle('hidden', S.tab!=='dive');
+  $('tabHistory').classList.toggle('hidden', S.tab!=='history');
+  renderLive(); renderEvents();
+  if(S.tab==='history') renderHistory();
+  $('indexNote').textContent = 'Screening index 0 to 100: bloom signal '+W.bloom+', temperature '+W.temperature+', dissolved oxygen '+W.oxygen+', turbidity '+W.turbidity+', pH '+W.ph+
+    '. Low under '+C.index.watch+', Watch '+C.index.watch+' to '+(C.index.high-1)+', High '+C.index.high+' and up. Bloom anchors: WHO '+WHO.low+' and '+WHO.moderate+' µg/L chlorophyll-a. Weights are a heuristic, not yet validated. Screening only. Laboratory confirms.';
+}
+
+/* ---------- history ---------- */
+const STORE_KEY='hydrov.scans.v1';
+function loadSaved(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{}; }catch(e){ return {}; } }
+function writeSaved(o){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(o)); }catch(e){} }
+function saveScan(){
+  const all=loadSaved(); const list=all[S.sc]||[];
+  const pts=S.points.map(p=>({i:p.i,x:+p.x.toFixed(1),y:+p.y.toFixed(1),depth:+p.depth.toFixed(2),chl:+p.chl.toFixed(2),temp:+p.temp.toFixed(2),do:+p.do.toFixed(2),ph:+p.ph.toFixed(3),turb:p.turb,tds:p.tds,sal:p.sal==null?null:+p.sal.toFixed(2),live:p.live}));
+  list.push({date:new Date().toISOString().slice(0,10), saved:true, points:pts, flags:S.flags.map(f=>({i:f.i,auto:f.auto,sampled:f.sampled})), live:S.points.some(p=>p.live.length)});
+  all[S.sc]=list.slice(-8); writeSaved(all);
+}
+const histCache={};
+function allScans(){
+  const s=sc();
+  if(!histCache[s.id]) histCache[s.id]=s.history.map(h=>{ const pts=simulateDive(s,h); pts.forEach(p=>scorePoint(p,s)); return {date:h.date, saved:false, points:pts, flags:autoFlags(pts)}; });
+  const saved=(loadSaved()[s.id]||[]).map(x=>{ x.points.forEach(p=>{ p.live=p.live||[]; scorePoint(p,s); }); return x; });
+  return histCache[s.id].concat(saved).map((x,k)=>Object.assign(x,{k, sum:summarize(x.points,x.flags)}));
+}
+let cmpSel=null;
+function renderHistory(){
+  const s=sc(), scans=allScans();
+  $('histTitle').textContent = s.waterBody+' · '+scans.length+' scans';
+  if(!cmpSel || cmpSel.some(k=>k>=scans.length)) cmpSel=[0, scans.length-1];
+  $('scanTable').innerHTML='<tr><th></th><th>Date</th><th>Highest</th><th>Average</th><th>Level</th><th>Flags</th><th>Data</th><th></th></tr>'+
+    scans.map(x=>'<tr><td><input type="checkbox" data-cmp="'+x.k+'" '+(cmpSel.includes(x.k)?'checked':'')+'></td><td>'+x.date+(x.saved?' (demo dive)':'')+'</td><td class="n" style="color:'+COLORS[x.sum.level]+'">'+x.sum.max+'</td><td class="n">'+x.sum.mean+'</td><td><span class="dotL" style="background:'+COLORS[x.sum.level]+'"></span>'+LEVEL_NAME[x.sum.level]+'</td><td class="n">'+x.sum.flags+'</td><td>'+(x.live?'<span class="chip replay">partly live</span>':'<span class="chip sim">SIMULATED</span>')+'</td><td><button data-rep="'+x.k+'">Report</button></td></tr>').join('');
+  $('scanTable').querySelectorAll('input[data-cmp]').forEach(cb=>cb.onchange=()=>{
+    const k=+cb.dataset.cmp;
+    if(cb.checked){ cmpSel=[cmpSel[cmpSel.length-1],k]; } else { cmpSel=cmpSel.filter(v=>v!==k); if(cmpSel.length<1) cmpSel=[k]; }
+    renderHistory();
+  });
+  $('scanTable').querySelectorAll('button[data-rep]').forEach(b=>b.onclick=()=>openReport(scans[+b.dataset.rep]));
+  // trend
+  const svg=$('trend'), L=60,R=975,T=16,B=290, n=scans.length;
+  const X=i=>n<2?(L+R)/2:L+(R-L)*i/(n-1), Y=v=>B-(B-T)*v/100;
+  let h='<rect x="'+L+'" y="'+Y(100)+'" width="'+(R-L)+'" height="'+(Y(C.index.high)-Y(100))+'" fill="#FF5D5D" fill-opacity=".12"/>'+
+    '<rect x="'+L+'" y="'+Y(C.index.high)+'" width="'+(R-L)+'" height="'+(Y(C.index.watch)-Y(C.index.high))+'" fill="#F5A623" fill-opacity=".10"/>';
+  [[C.index.high,'High'],[C.index.watch,'Watch'],[0,'Low']].forEach(([v,t])=>{ h+='<text x="'+(L-8)+'" y="'+(Y(v)+(v?18:-4))+'" fill="#8FA3BF" font-size="16" text-anchor="end" font-family="Segoe UI,Inter,sans-serif">'+t+'</text>'; });
+  h+='<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="#1A3A5A" stroke-width="2"/>';
+  h+='<polyline points="'+scans.map((x,i)=>X(i)+','+Y(x.sum.mean)).join(' ')+'" fill="none" stroke="#8FA3BF" stroke-width="3" stroke-dasharray="7 6"/>';
+  h+='<polyline points="'+scans.map((x,i)=>X(i)+','+Y(x.sum.max)).join(' ')+'" fill="none" stroke="#22D3EE" stroke-width="4"/>';
+  scans.forEach((x,i)=>{ h+='<circle cx="'+X(i)+'" cy="'+Y(x.sum.max)+'" r="8" fill="'+COLORS[x.sum.level]+'" stroke="#06101D" stroke-width="2"/>'+
+    '<text x="'+X(i)+'" y="'+(B+24)+'" fill="#8FA3BF" font-size="15" text-anchor="middle" font-family="Segoe UI,Inter,sans-serif">'+x.date.slice(5)+'</text>'+
+    '<text x="'+X(i)+'" y="'+(Y(x.sum.max)-14)+'" fill="#EEF4FF" font-size="16" font-weight="700" text-anchor="middle" font-family="Segoe UI,Inter,sans-serif">'+x.sum.max+'</text>'; });
+  svg.innerHTML=h;
+  // compare
+  $('cmp').innerHTML = cmpSel.map(k=>{ const x=scans[k]; return '<div><div style="font-weight:700;font-size:17px">'+x.date+(x.saved?' (demo dive)':'')+'</div><svg viewBox="0 0 1000 620" data-mini="'+k+'"></svg><div class="stat"><span><b style="color:'+COLORS[x.sum.level]+'">'+x.sum.max+'</b>highest index</span><span><b>'+x.sum.mean+'</b>average</span><span><b>'+x.sum.flags+'</b>flags</span><span><b>'+x.sum.temp.toFixed(1)+' °C</b>mean temperature</span></div></div>'; }).join('');
+  $('cmp').querySelectorAll('svg[data-mini]').forEach(el=>{ const x=scans[+el.dataset.mini]; drawMap(el, s, x.points, x.points.length-1, x.flags, {static:true, r:7}); });
+}
+
+/* ---------- report ---------- */
+function openReport(scan){
+  const s=sc();
+  if(!scan){
+    if(S.step<0){ alert('Run a dive first, or open a report from the History tab.'); return; }
+    scan={date:new Date().toISOString().slice(0,10), points:S.points.slice(0,S.step+1), flags:S.flags, saved:true};
+  }
+  const sm=summarize(scan.points, scan.flags);
+  const tmp=document.createElementNS('http://www.w3.org/2000/svg','svg'); tmp.setAttribute('viewBox','0 0 1000 620');
+  drawMap(tmp, s, scan.points, scan.points.length-1, scan.flags, {static:true, pal:LIGHT, r:7});
+  const keys=s.cards;
+  const rows=scan.flags.map(f=>{ const p=scan.points[f.i]; return '<tr><td>'+(p.i+1)+'</td><td>'+p.depth.toFixed(1)+'</td><td>'+p.index+' '+LEVEL_NAME[p.shown]+'</td>'+keys.filter(k=>k!=='depth').map(k=>'<td>'+CARDS[k].fmt(p[CARDS[k].key])+((p.live||[]).includes(k)?' (live)':'')+'</td>').join('')+'<td>'+(p.unusual&&p.level==='low'?'Sample for lab (metals, hydrocarbons)':'Sample for lab (algal toxins, bacteria)')+(f.sampled?', sample taken':'')+'</td></tr>'; }).join('');
+  $('report').innerHTML='<h1>'+esc(C.projectName)+' screening report</h1><div>'+esc(s.waterBody)+' · scan date '+scan.date+' · '+(s.id==='sea'?'Sea & coast (concept)':'Lake')+'</div>'+
+    '<div class="sim">SIMULATED DATA. Values are generated by the demo app, not measured'+(scan.points.some(p=>(p.live||[]).length)?', except values marked (live)':'')+'.'+(s.id==='sea'?' Concept: salt-water modules planned. Prototype is freshwater.':'')+'</div>'+
+    '<p>Highest index: <b>'+sm.max+' ('+LEVEL_NAME[sm.level]+')</b> · average '+sm.mean+' · flagged points: <b>'+sm.flags+'</b> · points scanned: '+scan.points.length+'</p>'+
+    tmp.outerHTML+
+    '<h3>Flagged points</h3><table><tr><th>Point</th><th>Depth m</th><th>Index</th>'+keys.filter(k=>k!=='depth').map(k=>'<th>'+CARDS[k].nm.replace(' (bloom signal)','')+' '+CARDS[k].u+'</th>').join('')+'<th>Action</th></tr>'+(rows||'<tr><td colspan="12">No points flagged.</td></tr>')+'</table>'+
+    '<p class="disc">Screening only. Laboratory confirms. The manager decides.</p>'+
+    '<p>Screening index weights: bloom signal '+W.bloom+', temperature '+W.temperature+', dissolved oxygen '+W.oxygen+', turbidity '+W.turbidity+', pH '+W.ph+'. Weights are a heuristic, not yet validated. Turbidity is a raw sensor value, not calibrated.</p>';
+  setTimeout(()=>window.print(), 50);
+}
+
+/* ---------- live data: Web Serial, file replay, sample replay ---------- */
+function parseLine(line){
+  const m={}; String(line).split(',').forEach(part=>{ const [k,v]=part.split(':').map(x=>x&&x.trim()); if(k&&v!==undefined&&v!==''&&!isNaN(+v)) m[k.toUpperCase()]=+v; });
+  if(m.T===undefined && m.TU===undefined && m.TDS===undefined) return false;
+  if(m.T!==undefined && m.T>-50) S.live.temp=m.T;
+  if(m.TU!==undefined) S.live.turb=m.TU;
+  if(m.TDS!==undefined) S.live.tds=m.TDS;
+  S.live.at=Date.now();
+  if(S.step<0 || !S.running) renderLive();
+  return true;
+}
+function setConn(mode, msg){
+  S.live.mode=mode; $('connStatus').textContent=msg;
+  $('connSummary').textContent = mode==='serial'?'Arduino: LIVE':mode==='file'?'Arduino: recorded log':mode==='sample'?'Arduino: sample replay':'Connect Arduino';
+  renderLive();
+}
+async function stopLive(){
+  if(S.live.replayTimer){ clearInterval(S.live.replayTimer); S.live.replayTimer=null; }
+  try{ if(S.live.reader){ await S.live.reader.cancel(); S.live.reader=null; } }catch(e){}
+  try{ if(S.live.port){ await S.live.port.close(); S.live.port=null; } }catch(e){}
+  S.live.temp=S.live.turb=S.live.tds=null;
+  setConn(null,'Not connected. All values are simulated.');
+}
+async function connectSerial(){
+  if(!('serial' in navigator)){ $('connStatus').textContent='Web Serial is not available here. Use Chrome or Edge and open the app from localhost (python -m http.server). Or use a replay.'; return; }
+  try{
+    await stopLive();
+    const port=await navigator.serial.requestPort(); await port.open({baudRate:9600});
+    S.live.port=port; setConn('serial','Connected. Temperature, turbidity and TDS are LIVE.');
+    const reader=port.readable.pipeThrough(new TextDecoderStream()).getReader(); S.live.reader=reader;
+    let buf='';
+    while(true){
+      const {value,done}=await reader.read(); if(done) break;
+      buf+=value; const lines=buf.split(/\r?\n/); buf=lines.pop();
+      lines.forEach(parseLine);
+    }
+  }catch(e){
+    $('connStatus').textContent='USB connection failed or closed ('+(e&&e.message||e)+'). Try a replay.';
+    if(S.live.mode==='serial') setConn(null,'USB connection lost. All values are simulated.');
+  }
+}
+function startReplay(lines, mode, msg){
+  stopLive().then(()=>{
+    let k=0; setConn(mode,msg);
+    const tick=()=>{ for(let tries=0;tries<lines.length;tries++){ const ok=parseLine(lines[k%lines.length]); k++; if(ok) break; } };
+    tick(); S.live.replayTimer=setInterval(tick,1000);
+  });
+}
+function sampleLog(){
+  const r=mulberry32(99), out=[];
+  for(let i=0;i<120;i++) out.push('T:'+(21.4+0.3*Math.sin(i/15)+gauss(r)*0.05).toFixed(1)+',TU:'+Math.round(312+40*Math.sin(i/11)+gauss(r)*6)+',TDS:'+Math.round(180+4*Math.sin(i/19)+gauss(r)*1.5));
+  return out;
+}
+
+/* ---------- wiring ---------- */
+$('btnStart').onclick=()=>{
+  clearSelectedIfAhead();
+  if(S.running){ stopTimer(); renderVerdict(); return; }
+  if(S.step>=S.points.length-1 && S.step>=0) newDive();
+  startTimer(); renderVerdict();
+};
+function clearSelectedIfAhead(){ if(S.selected!=null && S.running) S.selected=null; }
+$('btnReset').onclick=newDive;
+$('btnFlag').onclick=flagHere;
+$('btnReportLive').onclick=()=>openReport(null);
+document.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{
+  S.speed=+b.dataset.speed; document.querySelectorAll('[data-speed]').forEach(x=>x.classList.toggle('on',x===b));
+  if(S.running) startTimer();
+});
+document.querySelectorAll('#scenarioSeg button').forEach(b=>b.onclick=()=>{ if(S.sc===b.dataset.sc) return; S.sc=b.dataset.sc; cmpSel=null; newDive(); });
+document.querySelectorAll('#tabSeg button').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; renderAll(); });
+$('map').addEventListener('click',e=>{ const c=e.target.closest('circle[data-i]'); if(!c) return; S.selected=+c.dataset.i; renderLive(); });
+$('btnSerial').onclick=connectSerial;
+$('btnReplay').onclick=()=>startReplay(sampleLog(),'sample','Replaying a sample log at 1 line per second. These values are SIMULATED.');
+$('btnStopLive').onclick=stopLive;
+$('fileLog').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ const lines=t.split(/\r?\n/).filter(l=>/T:|TU:|TDS:/.test(l)); if(!lines.length){ $('connStatus').textContent='No lines like T:21.4,TU:312,TDS:180 found in that file.'; return; }
+    startReplay(lines,'file','Replaying '+lines.length+' recorded lines from '+f.name+' at 1 per second.'); });
+};
+$('btnClearSaved').onclick=()=>{ const all=loadSaved(); delete all[S.sc]; writeSaved(all); cmpSel=null; renderHistory(); };
+document.addEventListener('keydown',e=>{ if(e.code==='Space' && e.target===document.body){ e.preventDefault(); $('btnStart').click(); } });
+setInterval(()=>{ if(S.live.mode && !S.running && S.step<0) renderSensors(null); }, 1000);
+
+/* ---------- start, with URL options for screenshots: ?scenario=sea&jump=120&sample=1&tab=history ---------- */
+const q=new URLSearchParams(location.search);
+if(SCENARIOS[q.get('scenario')]) S.sc=q.get('scenario');
+newDive();
+if(q.get('jump')){
+  const to=Math.min(+q.get('jump'), C.diveSteps)-1;
+  while(S.step<to) stepOnce({noAlert:q.get('alert')!=='1', noSave:true});
+  if(q.get('sample')==='1'){ const f=S.flags.slice().reverse().find(f=>f.i<=S.step); if(f){ const keep=S.step; S.selected=null; S.step=f.i; flagHere(); S.step=keep; } }
+  if(q.get('alert')==='1'){ const p=S.points.slice(0,S.step+1).find(p=>p.shown==='high'); if(p) raiseAlert(p); }
+  renderLive();
+}
+if(q.get('tab')==='history'){ S.tab='history'; renderAll(); }
+})();
+</script>
+</body>
+</html>
