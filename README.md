@@ -34,7 +34,11 @@ It starts a small server on `http://127.0.0.1:8000/app/` (localhost only, the ne
 
 Without Python, double-click `app/index.html`. Everything works except Connect Arduino. Keep the `app` folder next to `config.js`.
 
-- Press **Start dive** (or the space bar). The lake dive takes about 20 seconds at 1x.
+- Press **Start dive** (or the space bar). The dive keeps going, lap after lap, until you press **Stop**. Each lap is saved to History. A lake lap is 360 readings, about 2.5 minutes at 1x; use 2x or 4x to speed up.
+- The lake survey covers the whole lake: the shallow west coves first, then back-and-forth passes from west to east. The next lap runs the same route back.
+- The map follows the robot zoomed in. Use **+** and **−** to zoom, and **Whole lake** to see everything. Dots with a white ring are readings taken below 4 m.
+- The chart under the map shows the index and the depth of every reading, with the lake bottom and the summer thermocline (about 4 m). Problems show at the depth where they were found: blooms near the surface in the warm, shallow edges, and very low oxygen below the thermocline in the deep basin.
+- The **?** in the top-right corner explains what is simulated. Every reading card and chart is also labeled SIMULATED, or LIVE when it comes from the Arduino.
 - The lake scenario is drawn on the real shoreline of **Lake Surduc** (Timiș county) from OpenStreetMap, with real coordinates and a timestamp for every point. The readings on that map are SIMULATED. We have not measured this lake, and the demo says nothing about its real water quality.
 - Switch between **Lake** and **Sea & coast (concept)** at the top. The sea scenario is a concept. The prototype is freshwater.
 - **Advice for** picks who reads the result: a lake or bathing-water manager, a fish or shellfish farm, or a drinking-water operator. The suggested action changes to fit. The lab confirms and the manager decides.
@@ -57,7 +61,7 @@ Sketch setup: open `arduino/serial_out/serial_out.ino` in the Arduino IDE and in
 
 ### Screenshots
 
-The app accepts URL options that jump straight to a state, for example `app/?scenario=sea&jump=60&sample=1`, `app/?profile=water&jump=80` or `app/?tab=history`.
+The app accepts URL options that jump straight to a state, for example `app/?jump=207&sample=1` (deep low oxygen), `app/?jump=330&view=all` (whole lake), `app/?scenario=sea&jump=78&sample=1`, `app/?profile=water&jump=12` or `app/?tab=history`. Jumps stop instead of looping.
 
 ## Rebuild the deck
 
