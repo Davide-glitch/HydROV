@@ -1,0 +1,12 @@
+{
+  "name": "deck-builder",
+  "private": true,
+  "description": "Builds deck.pptx and deck.pdf from slides.js",
+  "scripts": {
+    "build": "node build_deck.js"
+  },
+  "dependencies": {
+    "pptxgenjs": "^3.12.0",
+    "sharp": "^0.33.5"
+  }
+}

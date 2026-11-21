@@ -17,3 +17,5 @@ Thumbs.db
 ~$*
 .claude/settings.local.json
 .claude/
+deck/render/
+deck/deck.html
